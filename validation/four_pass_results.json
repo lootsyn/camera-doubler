@@ -1,8 +1,8 @@
 {
-  "review_date": "2026-07-21",
+  "review_date": "2026-07-22",
   "artifact": "robot_multicamera_backend_spec_v2_1",
   "overall": "PASS",
-  "scope_note": "Static specification/package review. Runtime build, codec round-trip, hardware, robot, and LeRobot loader integration remain implementation gates.",
+  "scope_note": "Four-pass specification/package review plus implementation runtime follow-up. Software-executable gates passed; physical hardware gates remain separately classified.",
   "passes": [
     {
       "pass": 1,
@@ -174,9 +174,24 @@
     }
   ],
   "unavailable_runtime_tools": {
-    "docker": true,
-    "protoc": true,
-    "gst-launch-1.0": true,
-    "shellcheck": true
+    "docker": false,
+    "protoc": false,
+    "gst-launch-1.0": false,
+    "shellcheck": false
+  },
+  "implementation_runtime_followup": {
+    "status": "PASS",
+    "rust_tests_passed": 46,
+    "synthetic_access_units": 24,
+    "deterministic_replay_steps": 24,
+    "encrypted_srt_reconnect": "PASS",
+    "rby1_sdk": "0.10.0",
+    "lerobot": "0.6.0",
+    "lerobot_tests_passed": 5,
+    "docker_images_built": 5,
+    "cyclonedx_sboms": 5,
+    "fixable_high_critical_vulnerabilities": 0,
+    "blocked_environment": 0,
+    "acceptance_evidence": "docs/audit/ACCEPTANCE_EVIDENCE.csv"
   }
 }

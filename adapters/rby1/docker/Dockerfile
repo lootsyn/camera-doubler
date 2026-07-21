@@ -1,22 +1,34 @@
-# RB-Y1 reference Adapter. Vendor SDK installation remains isolated here.
-ARG RUST_IMAGE=rust:1.85-bookworm
-FROM ${RUST_IMAGE} AS builder
+FROM ubuntu:24.04@sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      pkg-config clang cmake protobuf-compiler libssl-dev \
+ARG RBY1_SDK_VERSION=0.10.0
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app:/app/python \
+    PATH=/opt/venv/bin:$PATH
+
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+      ca-certificates python3 python3-venv \
+    && python3 -m venv /opt/venv \
+    && /opt/venv/bin/pip install --no-cache-dir \
+      "rby1-sdk==${RBY1_SDK_VERSION}" \
+      grpcio==1.71.0 grpcio-tools==1.71.0 protobuf==5.29.6 \
+    && groupadd --gid 10001 adapter \
+    && useradd --uid 10001 --gid adapter --no-create-home --shell /usr/sbin/nologin adapter \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /src
-COPY . .
-# The implementation agent MUST install or vendor the supported RB-Y1 SDK in
-# this stage only. Edge Core and Receiver images MUST NOT depend on it.
-RUN cargo build --locked --release -p adapter-rby1
+WORKDIR /app
+COPY proto/ ./proto/
+COPY scripts/generate-proto.py ./scripts/generate-proto.py
+COPY python/__init__.py ./python/__init__.py
+COPY python/adapter_runtime/ ./python/adapter_runtime/
+COPY adapters/__init__.py ./adapters/__init__.py
+COPY adapters/rby1/ ./adapters/rby1/
+RUN python scripts/generate-proto.py \
+    && RBY1_USE_MOCK=1 python -m adapters.rby1.app self-test \
+    && find /app -type d -name __pycache__ -prune -exec rm -rf '{}' +
 
-FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      ca-certificates libssl3 \
-    && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /src/target/release/adapter-rby1 /usr/local/bin/adapter-rby1
-USER root
-ENTRYPOINT ["/usr/local/bin/adapter-rby1"]
+USER 10001:10001
+ENTRYPOINT ["python", "-m", "adapters.rby1.app"]
 CMD ["serve"]

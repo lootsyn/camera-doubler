@@ -1,38 +1,42 @@
-# Generic Robot Multi-Camera Backend Specification 2.1
+# Generic Robot Multi-Camera Backend 2.1
 
-특정 로봇 벤더에 종속되지 않는 멀티카메라 가상카메라·외부 송출·시간 동기화·LeRobot 데이터셋 백엔드의 구현 설계서와 Docker 스캐폴딩이다.
+벤더 독립 Edge/Receiver와 독립 Hardware Adapter로 구성된 멀티카메라 동기화·제어·LeRobot Dataset backend 구현이다. 모든 카메라 AU에 Edge timestamp를 넣고, 환경변수로 지정한 anchor AU에만 CRC-protected state/action context와 반복 manifest를 넣는다.
 
-## 핵심 문서
+## 구현 구성
 
-- `ROBOT_MULTICAMERA_BACKEND_DESIGN.md`: 전체 구현 명세
-- `docs/TRANSPORT_BOOTSTRAP.md`: 카메라별 SRT 수신, anchor 판정, SEI 추출 규칙
-- `docs/PROTOCOL_CONSTANTS.md`: 고정 SEI UUID, CRC, canonical stream ID
-- `docs/OPERATIONS.md`: 배포와 운영
-- `REVIEW_REPORT.md`: 네 차례 독립 검토 결과와 남은 runtime gate
-- `validation/four_pass_results.json`: machine-readable PASS evidence
-- `validation/STATIC_CHECKS.txt`: 간단한 검증 요약
+- Rust workspace: camera discovery/stable slots, v4l2loopback manager, GStreamer capture/UI/H.264/SRT, SEI codec, Adapter client, clock mapping, anchor resampling, mTLS control gateway, Receiver bootstrap/API/synchronization/replay
+- Python: 공식 `rby1-sdk==0.10.0` Adapter, generic Adapter template와 gripper fixture, exact `lerobot[dataset]==0.6.0` transactional builder
+- 배포: non-root/read-only/least-capability Docker images와 독립 Edge/Receiver Compose
+- 검증: Rust unit/integration tests, Python contract/export tests, healthcheck-integrated synthetic camera codec round-trip, deterministic raw replay, fault tests, SBOM/Trivy, package/vendor-boundary checks
 
-## 주요 프로토콜
+기준 문서는 `ROBOT_MULTICAMERA_BACKEND_DESIGN.md`이며 구현 추적은 `docs/implementation/REQUIREMENTS_TRACEABILITY.md`, 현재 상태는 `docs/implementation/IMPLEMENTATION_STATUS.md`에 있다.
 
-- `proto/adapter_api.proto`: 로봇/그리퍼/부품 Adapter 계약
-- `proto/backend_api.proto`: Generic Edge Control Gateway
-- `proto/frame_metadata.proto`: timestamp, anchor context packet, manifest chunk
-- `proto/receiver_api.proto`: camera/anchor/manifest/quality/synchronized-step 조회
+## 빠른 검증
 
-## 설정 준비
+Linux/WSL에서:
 
 ```bash
-./scripts/bootstrap-example-config.sh  # .env.edge/.env.receiver/.env.dataset-builder 생성
-./scripts/generate-dev-secrets.sh
-sudo ./scripts/prepare-host.sh
-./scripts/validate-package.py
+python3 scripts/validate-package.py
+cargo fmt --all --check
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo test --workspace --all-features --locked
+scripts/run-synthetic-roundtrip.sh
+scripts/run-fault-tests.sh
+docker compose -f compose.edge.yaml config -q
+docker compose -f compose.receiver.yaml config -q
+docker run --rm --entrypoint /usr/local/bin/robot-replay-verify robot-multicam-receiver:local --help
 ```
 
-`ANCHOR_CAMERA_SELECTOR`는 정확히 한 카메라와 일치해야 한다. 송출만 제외하려면 `CAMERA_STREAM_EXCLUDE`, 가상카메라까지 비활성화하려면 `CAMERA_DISABLE`을 사용한다.
+개발 설정과 secret을 준비하려면:
 
-## Docker
+```bash
+./scripts/bootstrap-example-config.sh
+./scripts/generate-dev-secrets.sh
+sudo ./scripts/prepare-host.sh
+./scripts/verify-environment.sh
+```
 
-Dockerfile과 Compose는 AI 구현 에이전트가 생성할 Rust/Python source tree를 기준으로 한 빌드 스캐폴딩이다. 현재 패키지는 설계 산출물이므로 실제 source가 생성되기 전에는 image build가 완료되지 않는다.
+## 실행
 
 Receiver:
 
@@ -40,20 +44,23 @@ Receiver:
 docker compose --env-file .env.receiver -f compose.receiver.yaml up -d --build
 ```
 
-Edge + RB-Y1 reference Adapter:
+Edge와 RB-Y1 Adapter:
 
 ```bash
 docker compose --env-file .env.edge --profile rby1 -f compose.edge.yaml up -d --build
 ```
 
-Receiver는 dataset-builder 장애와 독립적으로 ingest/preview를 계속할 수 있도록 Compose dependency를 분리했다. Dataset Builder는 `.env.dataset-builder`에서 exact LeRobot version, cadence, atomic export 정책을 검증한다.
+물리 RB-Y1이 없을 때 `.env.adapter-rby1`의 `RBY1_USE_MOCK=1`로 공식 SDK contract를 사용하는 synthetic backend를 실행한다. 물리 카메라가 없는 검증 환경에서는 `robot-synthetic-roundtrip`이 `videotestsrc → H.264 → SEI → MPEG-TS → predecode extraction → decode`를 실제 플러그인으로 수행한다.
 
-## Transport 요약
+최종 감사 결과와 항목별 증거는 `docs/audit/FINAL_RELEASE_AUDIT.md` 및 `docs/audit/ACCEPTANCE_EVIDENCE.csv`에 있다. CycloneDX SBOM과 Trivy JSON은 `validation/security/`에 저장한다.
 
-1. 각 camera는 `base + stable slot`의 독립 SRT connection을 사용한다.
-2. 수신 port와 HMAC-protected SRT stream ID로 camera/session/slot/epoch를 provisional 식별한다.
-3. `SessionManifestV1.anchor_camera_id`를 authoritative anchor로 확정한다.
-4. 모든 camera AU에는 timestamp SEI가 있고, anchor AU에만 state/action context와 manifest chunk가 있다.
-5. Receiver는 decoder 전에 SEI를 추출하고 canonical decoded context와 exact CRC packet을 보존한 뒤 anchor timestamp로 synchronized step을 생성한다.
-6. raw TS를 저장할 때 transport identity는 connection-level `stream-envelope.json`으로 보존한다.
-7. 최종 LeRobot export는 pinned package version으로 temp/finalize/load-scan/atomic-commit을 수행하고 irregular cadence를 30 Hz로 조용히 표기하지 않는다.
+## 핵심 안전 규칙
+
+1. Edge만 physical camera를 열며 UI와 network branch는 독립 leaky queue를 사용한다.
+2. `CAMERA_STREAM_EXCLUDE`는 UI를 유지하고 외부 송출만 끈다. anchor와 exclude/disable 충돌은 시작 오류다.
+3. SRT connection은 `base + stable slot`, authenticated canonical `rmc1` identity와 epoch를 사용한다.
+4. Receiver는 decoder 전에 SEI를 추출하고 manifest의 anchor/camera catalog를 transport identity와 교차 검증한다.
+5. command는 mTLS, exclusive TTL lease, UUID 중복 방지, schema/mode/shape/finite/range 검증을 모두 통과해야 Adapter로 전달된다.
+6. Dataset export는 cadence 검사 후 temp/finalize/full loader scan/checksum/atomic rename 순서로 commit한다. frame reuse나 synthetic image 생성은 금지한다.
+
+실제 로봇 motion과 USB camera hotplug만 hardware gate이며 SDK, Docker, GStreamer, synthetic camera와 LeRobot loader는 release 검증 대상이다.

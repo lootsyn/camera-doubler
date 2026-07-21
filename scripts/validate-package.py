@@ -6,6 +6,7 @@ import json
 import re
 import sys
 import tomllib
+import zipfile
 from pathlib import Path
 
 try:
@@ -123,7 +124,11 @@ receiver_depends = (((receiver_compose or {}).get("services") or {}).get("receiv
 if "dataset-builder" in receiver_depends:
     error("receiver must not depend on dataset-builder; ingest/preview must remain independent")
 dataset_service = (((receiver_compose or {}).get("services") or {}).get("dataset-builder") or {})
-if ".env.dataset-builder" not in (dataset_service.get("env_file") or []):
+dataset_env_files = [
+    entry.get("path") if isinstance(entry, dict) else entry
+    for entry in (dataset_service.get("env_file") or [])
+]
+if ".env.dataset-builder" not in dataset_env_files:
     error("dataset-builder must use .env.dataset-builder exact-version/export contract")
 
 # Lightweight protobuf structural checks. CI MUST still compile with protoc.
@@ -344,13 +349,61 @@ prepare_host = read("scripts/prepare-host.sh")
 if "requested pool" not in prepare_host or "Refusing to report success" not in prepare_host:
     error("prepare-host.sh does not verify an already-loaded v4l2loopback pool")
 
-# No generated secrets or local env files may be packaged.
-for rel in [".env.edge", ".env.receiver", ".env.dataset-builder", ".env.adapter-rby1"]:
-    if (ROOT / rel).exists():
-        error(f"local environment file must not be packaged: {rel}")
-for p in (ROOT / "secrets").glob("*") if (ROOT / "secrets").exists() else []:
-    if p.name not in {".gitignore", "README.md"}:
-        error(f"generated secret must not be packaged: {p.relative_to(ROOT)}")
+# Packaging must exclude local state even when it is present for runtime tests.
+package_script = read("scripts/package.sh")
+for phrase in [
+    '".cargo-home"',
+    '".rustup-home"',
+    '".venv-rby1"',
+    '".venv-dataset"',
+    '"target"',
+    '("validation", "runtime")',
+    'rel.parts[0] == "secrets"',
+    'excluded_env',
+]:
+    if phrase not in package_script:
+        error(f"package.sh missing local-state exclusion: {phrase}")
+
+if len(sys.argv) > 2:
+    error("usage: validate-package.py [ARCHIVE.zip]")
+elif len(sys.argv) == 2:
+    archive_path = Path(sys.argv[1]).resolve()
+    if not archive_path.is_file():
+        error(f"package archive does not exist: {archive_path}")
+    elif not zipfile.is_zipfile(archive_path):
+        error(f"package archive is not a ZIP file: {archive_path}")
+    else:
+        forbidden_roots = {
+            ".git",
+            ".cargo-home",
+            ".rustup-home",
+            ".tools",
+            ".venv-rby1",
+            ".venv-dataset",
+            "target",
+        }
+        forbidden_env = {
+            ".env.edge",
+            ".env.receiver",
+            ".env.dataset-builder",
+            ".env.adapter-rby1",
+        }
+        with zipfile.ZipFile(archive_path) as archive:
+            members = [Path(name) for name in archive.namelist() if not name.endswith("/")]
+        for member in members:
+            parts = member.parts[1:]  # archive is rooted under the project directory
+            if not parts:
+                continue
+            if parts[0] in forbidden_roots:
+                error(f"package contains local cache: {member.as_posix()}")
+            if tuple(parts[:2]) == ("validation", "runtime"):
+                error(f"package contains runtime fixture: {member.as_posix()}")
+            if parts[0] == "secrets" and parts[-1] not in {".gitignore", "README.md"}:
+                error(f"package contains generated secret: {member.as_posix()}")
+            if parts[-1] in forbidden_env:
+                error(f"package contains local environment file: {member.as_posix()}")
+            if "__pycache__" in parts or member.suffix == ".pyc":
+                error(f"package contains Python cache: {member.as_posix()}")
 
 # Scripts expected to execute must be executable.
 for p in sorted((ROOT / "scripts").glob("*.sh")):

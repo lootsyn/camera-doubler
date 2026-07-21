@@ -1,0 +1,284 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2026-07-21T21:23:40.126459378Z",
+  "ArtifactName": "robot-adapter-template:local",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "Size": 214851584,
+    "OS": {
+      "Family": "debian",
+      "Name": "12.15"
+    },
+    "ImageID": "sha256:0a8c90eb3c388d7e561414177c71d3dba509fe697bc741d07c3c78f38d5654b7",
+    "DiffIDs": [
+      "sha256:ace34d1d784c01e3f9d156687089e8f58f786e23ccd097bdbbf337d6d28b3783",
+      "sha256:edf2e8d9a6f19eeb93e6adb712ccda0d8e687effd6a79400f258d957f40321a1",
+      "sha256:4a0992abe543a127be2561cc40cd50315516bfbf9d6169f06f3f8d30166fa6ab",
+      "sha256:de0b11a690a6e81271e41db48dea18fc39104f7ba2034e2ecf6971586f66021b",
+      "sha256:df7d6a2311c6d312afad135eb7d66d17ef00240d410e3dc3e9cb46f9944cad2b",
+      "sha256:5813e54398f5494c313e80bd242c90ba51895333b76f6ac9aa26ffaa9f194891",
+      "sha256:92946a53261a3154e583bca9e9e07cefff737d4f4d2e7b06ef2b7b39cb51c4b8",
+      "sha256:7e436abb745c92e1b4cc1079a120f714eefe95360a70a261e19ccd4e44e50f96",
+      "sha256:9c3eb46a5dceccab5228632cff4bc80c0a5e858454f15c3a8e483a38d3f540c3",
+      "sha256:9cb2b6e6589d9fca529cd6ac2fabdb4343bd4f7ad6a4ee60040774c6acabfab3",
+      "sha256:1338dba61b41a701f6f249ed089a3126039a6ef8260688af5bf7fcc26f5e3164",
+      "sha256:75cea4a93d55c5d684214f132912f24b183a8941424ab020b77658b7ab49dd18",
+      "sha256:e2fa00e5c59a87b8babb5edd4dafc6ef5e93c6635e3fc6ed68afa6c7be3acf50",
+      "sha256:694b66978b60e5caab0c847106ad0e6a0aee73001de1f26430cf51bcd452d677"
+    ],
+    "RepoTags": [
+      "robot-adapter-template:local"
+    ],
+    "RepoDigests": [
+      "robot-adapter-template@sha256:0a8c90eb3c388d7e561414177c71d3dba509fe697bc741d07c3c78f38d5654b7"
+    ],
+    "ImageConfig": {
+      "architecture": "amd64",
+      "created": "2026-07-22T06:15:29.525968411+09:00",
+      "history": [
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "# debian.sh --arch 'amd64' out/ 'bookworm' '@1747699200'",
+          "comment": "debuerreotype 0.15"
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "ENV PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "ENV LANG=C.UTF-8",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "RUN /bin/sh -c set -eux; \tapt-get update; \tapt-get install -y --no-install-recommends \t\tca-certificates \t\tnetbase \t\ttzdata \t; \trm -rf /var/lib/apt/lists/* # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "ENV GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "ENV PYTHON_VERSION=3.12.10",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "ENV PYTHON_SHA256=07ab697474595e06f06647417d3c7fa97ded07afc1a7e4454c5639919b46eaea",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "RUN /bin/sh -c set -eux; \t\tsavedAptMark=\"$(apt-mark showmanual)\"; \tapt-get update; \tapt-get install -y --no-install-recommends \t\tdpkg-dev \t\tgcc \t\tgnupg \t\tlibbluetooth-dev \t\tlibbz2-dev \t\tlibc6-dev \t\tlibdb-dev \t\tlibffi-dev \t\tlibgdbm-dev \t\tliblzma-dev \t\tlibncursesw5-dev \t\tlibreadline-dev \t\tlibsqlite3-dev \t\tlibssl-dev \t\tmake \t\ttk-dev \t\tuuid-dev \t\twget \t\txz-utils \t\tzlib1g-dev \t; \t\twget -O python.tar.xz \"https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz\"; \techo \"$PYTHON_SHA256 *python.tar.xz\" | sha256sum -c -; \twget -O python.tar.xz.asc \"https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc\"; \tGNUPGHOME=\"$(mktemp -d)\"; export GNUPGHOME; \tgpg --batch --keyserver hkps://keys.openpgp.org --recv-keys \"$GPG_KEY\"; \tgpg --batch --verify python.tar.xz.asc python.tar.xz; \tgpgconf --kill all; \trm -rf \"$GNUPGHOME\" python.tar.xz.asc; \tmkdir -p /usr/src/python; \ttar --extract --directory /usr/src/python --strip-components=1 --file python.tar.xz; \trm python.tar.xz; \t\tcd /usr/src/python; \tgnuArch=\"$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)\"; \t./configure \t\t--build=\"$gnuArch\" \t\t--enable-loadable-sqlite-extensions \t\t--enable-optimizations \t\t--enable-option-checking=fatal \t\t--enable-shared \t\t$(test \"$gnuArch\" != 'riscv64-linux-musl' \u0026\u0026 echo '--with-lto') \t\t--with-ensurepip \t; \tnproc=\"$(nproc)\"; \tEXTRA_CFLAGS=\"$(dpkg-buildflags --get CFLAGS)\"; \tLDFLAGS=\"$(dpkg-buildflags --get LDFLAGS)\"; \tLDFLAGS=\"${LDFLAGS:--Wl},--strip-all\"; \t\tarch=\"$(dpkg --print-architecture)\"; arch=\"${arch##*-}\"; \t\tcase \"$arch\" in \t\t\tamd64|arm64) \t\t\t\tEXTRA_CFLAGS=\"${EXTRA_CFLAGS:-} -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer\"; \t\t\t\t;; \t\t\ti386) \t\t\t\t;; \t\t\t*) \t\t\t\tEXTRA_CFLAGS=\"${EXTRA_CFLAGS:-} -fno-omit-frame-pointer\"; \t\t\t\t;; \t\tesac; \tmake -j \"$nproc\" \t\t\"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}\" \t\t\"LDFLAGS=${LDFLAGS:-}\" \t; \trm python; \tmake -j \"$nproc\" \t\t\"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}\" \t\t\"LDFLAGS=${LDFLAGS:--Wl},-rpath='\\$\\$ORIGIN/../lib'\" \t\tpython \t; \tmake install; \t\tcd /; \trm -rf /usr/src/python; \t\tfind /usr/local -depth \t\t\\( \t\t\t\\( -type d -a \\( -name test -o -name tests -o -name idle_test \\) \\) \t\t\t-o \\( -type f -a \\( -name '*.pyc' -o -name '*.pyo' -o -name 'libpython*.a' \\) \\) \t\t\\) -exec rm -rf '{}' + \t; \t\tldconfig; \t\tapt-mark auto '.*' \u003e /dev/null; \tapt-mark manual $savedAptMark; \tfind /usr/local -type f -executable -not \\( -name '*tkinter*' \\) -exec ldd '{}' ';' \t\t| awk '/=\u003e/ { so = $(NF-1); if (index(so, \"/usr/local/\") == 1) { next }; gsub(\"^/(usr/)?\", \"\", so); printf \"*%s\\n\", so }' \t\t| sort -u \t\t| xargs -r dpkg-query --search \t\t| cut -d: -f1 \t\t| sort -u \t\t| xargs -r apt-mark manual \t; \tapt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \trm -rf /var/lib/apt/lists/*; \t\texport PYTHONDONTWRITEBYTECODE=1; \tpython3 --version; \tpip3 --version # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "RUN /bin/sh -c set -eux; \tfor src in idle3 pip3 pydoc3 python3 python3-config; do \t\tdst=\"$(echo \"$src\" | tr -d 3)\"; \t\t[ -s \"/usr/local/bin/$src\" ]; \t\t[ ! -e \"/usr/local/bin/$dst\" ]; \t\tln -svT \"$src\" \"/usr/local/bin/$dst\"; \tdone # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "CMD [\"python3\"]",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:14:49Z",
+          "created_by": "/bin/sh -c #(nop)  ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app:/app/python",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:15:18Z",
+          "created_by": "/bin/sh -c apt-get update \u0026\u0026 apt-get upgrade -y     \u0026\u0026 rm -rf /var/lib/apt/lists/*     \u0026\u0026 pip install --no-cache-dir grpcio==1.71.0 grpcio-tools==1.71.0 protobuf==5.29.6     \u0026\u0026 groupadd --gid 10001 adapter     \u0026\u0026 useradd --uid 10001 --gid adapter --no-create-home --shell /usr/sbin/nologin adapter"
+        },
+        {
+          "created": "2026-07-21T21:15:20Z",
+          "created_by": "/bin/sh -c #(nop) WORKDIR /app"
+        },
+        {
+          "created": "2026-07-21T21:15:20Z",
+          "created_by": "/bin/sh -c #(nop) COPY dir:6ba1da5dee78160e7356d02f29223e878291ba52712317e6d56fd356c3230615 in ./proto/ "
+        },
+        {
+          "created": "2026-07-21T21:15:21Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:591c8cbf20b64902d020bd19e593f854c1115e2e30f21d081bb04f3b98b2f467 in ./scripts/generate-proto.py "
+        },
+        {
+          "created": "2026-07-21T21:15:22Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:0a9712d77db9c1640906b6b4567df4a7601b0aa8dbda20216473c64149881df3 in ./python/__init__.py "
+        },
+        {
+          "created": "2026-07-21T21:15:23Z",
+          "created_by": "/bin/sh -c #(nop) COPY dir:4b92eca773c49a7c09744260dde2db2c94f3522515a5a2df2e5fe0dda60ea047 in ./python/adapter_runtime/ "
+        },
+        {
+          "created": "2026-07-21T21:15:23Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:403ca43a33e7d46e04807f4a7763db6ea0907bc56116f0909ecfcc964afbccf1 in ./adapters/__init__.py "
+        },
+        {
+          "created": "2026-07-21T21:15:24Z",
+          "created_by": "/bin/sh -c #(nop) COPY dir:cce1764c7c2759d8f2da32f44b52ca62c67ad8d395107cc92ebd07c267f815d5 in ./adapters/template/ "
+        },
+        {
+          "created": "2026-07-21T21:15:25Z",
+          "created_by": "/bin/sh -c #(nop) COPY dir:a04b7691a94dfac2e398221fce8e3db0a872d6c76a30bdeefea234825e575735 in ./adapters/gripper_fixture/ "
+        },
+        {
+          "created": "2026-07-21T21:15:27Z",
+          "created_by": "/bin/sh -c python scripts/generate-proto.py     \u0026\u0026 python -m adapters.template.app self-test     \u0026\u0026 python -m adapters.gripper_fixture.app self-test     \u0026\u0026 find /app -type d -name __pycache__ -prune -exec rm -rf '{}' +"
+        },
+        {
+          "created": "2026-07-21T21:15:28Z",
+          "created_by": "/bin/sh -c #(nop)  USER 10001:10001",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:15:28Z",
+          "created_by": "/bin/sh -c #(nop)  ENTRYPOINT [\"python\" \"-m\" \"adapters.template.app\"]",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:15:29Z",
+          "created_by": "/bin/sh -c #(nop)  CMD [\"serve\"]",
+          "empty_layer": true
+        }
+      ],
+      "os": "linux",
+      "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+          "sha256:ace34d1d784c01e3f9d156687089e8f58f786e23ccd097bdbbf337d6d28b3783",
+          "sha256:edf2e8d9a6f19eeb93e6adb712ccda0d8e687effd6a79400f258d957f40321a1",
+          "sha256:4a0992abe543a127be2561cc40cd50315516bfbf9d6169f06f3f8d30166fa6ab",
+          "sha256:de0b11a690a6e81271e41db48dea18fc39104f7ba2034e2ecf6971586f66021b",
+          "sha256:df7d6a2311c6d312afad135eb7d66d17ef00240d410e3dc3e9cb46f9944cad2b",
+          "sha256:5813e54398f5494c313e80bd242c90ba51895333b76f6ac9aa26ffaa9f194891",
+          "sha256:92946a53261a3154e583bca9e9e07cefff737d4f4d2e7b06ef2b7b39cb51c4b8",
+          "sha256:7e436abb745c92e1b4cc1079a120f714eefe95360a70a261e19ccd4e44e50f96",
+          "sha256:9c3eb46a5dceccab5228632cff4bc80c0a5e858454f15c3a8e483a38d3f540c3",
+          "sha256:9cb2b6e6589d9fca529cd6ac2fabdb4343bd4f7ad6a4ee60040774c6acabfab3",
+          "sha256:1338dba61b41a701f6f249ed089a3126039a6ef8260688af5bf7fcc26f5e3164",
+          "sha256:75cea4a93d55c5d684214f132912f24b183a8941424ab020b77658b7ab49dd18",
+          "sha256:e2fa00e5c59a87b8babb5edd4dafc6ef5e93c6635e3fc6ed68afa6c7be3acf50",
+          "sha256:694b66978b60e5caab0c847106ad0e6a0aee73001de1f26430cf51bcd452d677"
+        ]
+      },
+      "config": {
+        "Cmd": [
+          "serve"
+        ],
+        "Entrypoint": [
+          "python",
+          "-m",
+          "adapters.template.app"
+        ],
+        "Env": [
+          "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "LANG=C.UTF-8",
+          "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+          "PYTHON_VERSION=3.12.10",
+          "PYTHON_SHA256=07ab697474595e06f06647417d3c7fa97ded07afc1a7e4454c5639919b46eaea",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "PYTHONUNBUFFERED=1",
+          "PYTHONPATH=/app:/app/python"
+        ],
+        "User": "10001:10001",
+        "WorkingDir": "/app"
+      }
+    },
+    "Layers": [
+      {
+        "Size": 77875200,
+        "Digest": "sha256:61320b01ae5e0798393ef25f2dc72faf43703e60ba089b07d7170acbabbf8f62",
+        "DiffID": "sha256:ace34d1d784c01e3f9d156687089e8f58f786e23ccd097bdbbf337d6d28b3783"
+      },
+      {
+        "Size": 9551360,
+        "Digest": "sha256:be1274d3cce09d8126f8176203ba1e91f6733a713c1185ba01ee704759b0b62d",
+        "DiffID": "sha256:edf2e8d9a6f19eeb93e6adb712ccda0d8e687effd6a79400f258d957f40321a1"
+      },
+      {
+        "Size": 41565184,
+        "Digest": "sha256:8991c9200d621283b06ae395129d454c998e0f55095e106055240b5956ab2a2a",
+        "DiffID": "sha256:4a0992abe543a127be2561cc40cd50315516bfbf9d6169f06f3f8d30166fa6ab"
+      },
+      {
+        "Size": 5120,
+        "Digest": "sha256:7a1cb8b882211b870d7e639e775f91e423a526092b4b3eadefbab6aa7457910d",
+        "DiffID": "sha256:de0b11a690a6e81271e41db48dea18fc39104f7ba2034e2ecf6971586f66021b"
+      },
+      {
+        "Size": 85633024,
+        "Digest": "sha256:e34d2b0d337060708987f281e5cc126697abb30b44ac63a9f8cc3941eceb59b0",
+        "DiffID": "sha256:df7d6a2311c6d312afad135eb7d66d17ef00240d410e3dc3e9cb46f9944cad2b"
+      },
+      {
+        "Size": 1536,
+        "Digest": "sha256:b1069d76c2fd36e010bd0c36dc284b13ca564135a41fc7e8f1da57b101a904ab",
+        "DiffID": "sha256:5813e54398f5494c313e80bd242c90ba51895333b76f6ac9aa26ffaa9f194891"
+      },
+      {
+        "Size": 22016,
+        "Digest": "sha256:3c4566b62bb85ac61b10f6be178bc23721796c374b8ee03cd30390dc8aa33da0",
+        "DiffID": "sha256:92946a53261a3154e583bca9e9e07cefff737d4f4d2e7b06ef2b7b39cb51c4b8"
+      },
+      {
+        "Size": 4096,
+        "Digest": "sha256:516d525c61774c2cab5da681394be22c0ecc42820ecacff524baf6f21d57e2e8",
+        "DiffID": "sha256:7e436abb745c92e1b4cc1079a120f714eefe95360a70a261e19ccd4e44e50f96"
+      },
+      {
+        "Size": 3072,
+        "Digest": "sha256:14822b0e71131b1f73b1fc867a3841ea3c11f1f638aef71d613a018606b75172",
+        "DiffID": "sha256:9c3eb46a5dceccab5228632cff4bc80c0a5e858454f15c3a8e483a38d3f540c3"
+      },
+      {
+        "Size": 25600,
+        "Digest": "sha256:38cd935ea8b8b5fb027c8866a45138575c24e1b643fe101e53d10598dc42090a",
+        "DiffID": "sha256:9cb2b6e6589d9fca529cd6ac2fabdb4343bd4f7ad6a4ee60040774c6acabfab3"
+      },
+      {
+        "Size": 3072,
+        "Digest": "sha256:98c42d9d681447ba2629781378e14aab78f5cee222a74b6df9e60119c2d2aab6",
+        "DiffID": "sha256:1338dba61b41a701f6f249ed089a3126039a6ef8260688af5bf7fcc26f5e3164"
+      },
+      {
+        "Size": 19456,
+        "Digest": "sha256:306cdf3637c4bd74c379597cb4b876551a2218307a8dc2c11941d03e50cb941c",
+        "DiffID": "sha256:75cea4a93d55c5d684214f132912f24b183a8941424ab020b77658b7ab49dd18"
+      },
+      {
+        "Size": 9216,
+        "Digest": "sha256:25d5ab676af3313bc3daef90a1c34ef054914c0d0888d51eaf4e6f0bfd4d00a5",
+        "DiffID": "sha256:e2fa00e5c59a87b8babb5edd4dafc6ef5e93c6635e3fc6ed68afa6c7be3acf50"
+      },
+      {
+        "Size": 133632,
+        "Digest": "sha256:acba30a8484904792b2b2fb84fd6dc84e5c152edf3491c05e10a7869e57b8629",
+        "DiffID": "sha256:694b66978b60e5caab0c847106ad0e6a0aee73001de1f26430cf51bcd452d677"
+      }
+    ]
+  },
+  "Results": [
+    {
+      "Target": "robot-adapter-template:local (debian 12.15)",
+      "Class": "os-pkgs",
+      "Type": "debian"
+    },
+    {
+      "Target": "Python",
+      "Class": "lang-pkgs",
+      "Type": "python-pkg"
+    }
+  ]
+}

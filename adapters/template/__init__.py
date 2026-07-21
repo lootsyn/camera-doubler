@@ -1,0 +1,1 @@
+"""Copyable generic component adapter."""

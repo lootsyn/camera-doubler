@@ -1,0 +1,43 @@
+Final release validation: 2026-07-22 Asia/Seoul
+
+Rust workspace
+- cargo fmt --all --check: PASS
+- cargo clippy --locked --workspace --all-targets --all-features -- -D warnings: PASS
+- cargo test --locked --workspace --all-features: PASS (46 passed, 0 failed)
+
+Edge deployed image robot-multicam-edge-core:local (828dbde52902)
+- non-root/read-only/cap-drop/no-new-privileges healthcheck: PASS
+- required GStreamer plugin discovery: PASS
+- H.264 synthetic round-trip: PASS (24 AUs)
+- secondary timestamp-only: PASS
+- anchor CRC context and manifest: PASS
+- MPEG-TS mux/demux, predecode extraction, decoder branch: PASS
+
+Receiver deployed image robot-multicam-receiver:local (5fe0f6fdbf8f)
+- non-root/read-only/cap-drop/no-new-privileges self-test: PASS
+- raw replay: PASS (1 segment, 24 AUs, 24 synchronized steps)
+- metadata_sha256: 901bd0be6db8273e7cb79beb571899f093ea3d58e408a7e041b04629ccc48268
+- step_sha256: 8c8b9d9cca045f7ba9a0570d4685aad9ddc75d1b63a5474241f6537b9405d46b
+- deterministic equality: bit-for-bit
+- encrypted authenticated SRT reconnect: PASS (same stream accepted twice, Receiver remained ready)
+- forced disk pressure: PASS (HTTP 503; disk_pressure low)
+
+Python/runtime
+- official rby1-sdk==0.10.0 semantic self-test: PASS
+- RB-Y1 UDS descriptor/state/command/health smoke: PASS
+- Adapter template and gripper fixture: PASS
+- exact lerobot==0.6.0 transactional export tests: PASS (5 passed)
+- Dataset Builder hardened runtime /readyz: PASS
+- Receiver Compose stack: receiver healthy, dataset-builder healthy
+- Edge Adapter Compose profiles: official-SDK RB-Y1 mock healthy, gripper fixture healthy
+
+Supply chain
+- CycloneDX SBOM generated for edge, receiver, dataset, rby1, template: PASS
+- Trivy 0.65.0 --ignore-unfixed --severity HIGH,CRITICAL: 0 findings for all 5 images
+- package content validator and vendor boundary: PASS
+
+Hardware-only gates
+- physical USB camera discovery/hotplug: BLOCKED_HARDWARE
+- physical v4l2loopback device output/continuity: BLOCKED_HARDWARE
+- physical RB-Y1 command/motion: BLOCKED_HARDWARE
+- BLOCKED_ENVIRONMENT: 0

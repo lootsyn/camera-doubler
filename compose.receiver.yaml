@@ -2,12 +2,14 @@ name: robot-multicam-receiver
 
 services:
   data-init:
-    image: busybox:1.36
+    image: busybox:1.36.1@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662
     user: "0:0"
     command: ["sh", "-c", "chown -R 10001:10001 /data"]
     volumes:
       - receiver-data:/data
     restart: "no"
+    cap_drop: ["ALL"]
+    cap_add: ["CHOWN", "FOWNER"]
 
   receiver:
     build:
@@ -15,8 +17,13 @@ services:
       dockerfile: docker/Dockerfile.receiver
     image: robot-multicam-receiver:local
     env_file:
-      - .env.receiver
+      - path: .env.receiver
+        required: false
     init: true
+    user: "10001:10001"
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
     restart: unless-stopped
     stop_grace_period: 20s
     ports:
@@ -60,8 +67,13 @@ services:
       dockerfile: docker/Dockerfile.dataset-builder
     image: robot-multicam-dataset-builder:local
     env_file:
-      - .env.dataset-builder
+      - path: .env.dataset-builder
+        required: false
     init: true
+    user: "10001:10001"
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
     restart: unless-stopped
     volumes:
       - receiver-data:/data

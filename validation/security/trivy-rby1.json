@@ -1,0 +1,225 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2026-07-21T21:23:38.011260076Z",
+  "ArtifactName": "robot-adapter-rby1:local",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "Size": 283580416,
+    "OS": {
+      "Family": "ubuntu",
+      "Name": "24.04"
+    },
+    "ImageID": "sha256:2711803cc6c2040b6416e9ee795349f496ec546166390bd94257ba7d35a2eac1",
+    "DiffIDs": [
+      "sha256:f103cd120fdd6cbc7f3d0e1d5bfb3e16290c32ead7b822d15c34460ecdf64b29",
+      "sha256:03f1a436175de089abcf04cbf2707f7bd05ac525fd2746b465c3e46d41e54c32",
+      "sha256:c27e736c1b7243199263c1ff5d82d1fe3ff3b04005e7d407aa382463359045d2",
+      "sha256:a97db28b187b7047a8cb0c9f6827f6abe2d7e1e97f2a25c02c5ec0605e473918",
+      "sha256:5ddd6e81b87bf929c62911fded92c86989df514a157eab11df07453804db2be7",
+      "sha256:7c4ffdc666cb192b0bf83ba2c0d08d6903c4056efe49878cf2a42be5c51618d5",
+      "sha256:bd83f7aec442c38f1c5edbff2404bb013c3ff5c2869a13d1ec24e217b506f524",
+      "sha256:e97fc71d33d5664c9d59928ee17e204179cb172c594ad119022f2e1c1117dc68",
+      "sha256:16ab079267a0bd5a47c8b3728c450ad76d65671c28965a670047dd1e9600541e",
+      "sha256:1c735bbf9804adc1150afb4aa18ecda2fde3f8764e2afe6879eeea2a23af2157"
+    ],
+    "RepoTags": [
+      "robot-adapter-rby1:local"
+    ],
+    "RepoDigests": [
+      "robot-adapter-rby1@sha256:2711803cc6c2040b6416e9ee795349f496ec546166390bd94257ba7d35a2eac1"
+    ],
+    "ImageConfig": {
+      "architecture": "amd64",
+      "created": "2026-07-22T06:15:45.509911515+09:00",
+      "history": [
+        {
+          "created": "2026-06-22T21:24:17Z",
+          "created_by": "/bin/sh -c #(nop)  ARG RELEASE",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-06-22T21:24:18Z",
+          "created_by": "/bin/sh -c #(nop)  ARG LAUNCHPAD_BUILD_ARCH",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-06-22T21:24:18Z",
+          "created_by": "/bin/sh -c #(nop)  LABEL org.opencontainers.image.version=24.04",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-06-22T21:24:20Z",
+          "created_by": "/bin/sh -c #(nop) ADD file:8c609c85109d07bf47cf268a175b3be8bbe34fc0c41d15d99b090d099f4dc837 in / "
+        },
+        {
+          "created": "2026-06-22T21:24:21Z",
+          "created_by": "/bin/sh -c #(nop)  CMD [\"/bin/bash\"]",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:14:51Z",
+          "created_by": "/bin/sh -c #(nop)  ARG RBY1_SDK_VERSION=0.10.0",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:14:51Z",
+          "created_by": "/bin/sh -c #(nop)  ENV DEBIAN_FRONTEND=noninteractive PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app:/app/python PATH=/opt/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:15:33Z",
+          "created_by": "|1 RBY1_SDK_VERSION=0.10.0 /bin/sh -c apt-get update \u0026\u0026 apt-get upgrade -y     \u0026\u0026 apt-get install -y --no-install-recommends       ca-certificates python3 python3-venv     \u0026\u0026 python3 -m venv /opt/venv     \u0026\u0026 /opt/venv/bin/pip install --no-cache-dir       \"rby1-sdk==${RBY1_SDK_VERSION}\"       grpcio==1.71.0 grpcio-tools==1.71.0 protobuf==5.29.6     \u0026\u0026 groupadd --gid 10001 adapter     \u0026\u0026 useradd --uid 10001 --gid adapter --no-create-home --shell /usr/sbin/nologin adapter     \u0026\u0026 rm -rf /var/lib/apt/lists/*"
+        },
+        {
+          "created": "2026-07-21T21:15:36Z",
+          "created_by": "/bin/sh -c #(nop) WORKDIR /app"
+        },
+        {
+          "created": "2026-07-21T21:15:37Z",
+          "created_by": "/bin/sh -c #(nop) COPY dir:6ba1da5dee78160e7356d02f29223e878291ba52712317e6d56fd356c3230615 in ./proto/ "
+        },
+        {
+          "created": "2026-07-21T21:15:38Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:591c8cbf20b64902d020bd19e593f854c1115e2e30f21d081bb04f3b98b2f467 in ./scripts/generate-proto.py "
+        },
+        {
+          "created": "2026-07-21T21:15:39Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:0a9712d77db9c1640906b6b4567df4a7601b0aa8dbda20216473c64149881df3 in ./python/__init__.py "
+        },
+        {
+          "created": "2026-07-21T21:15:39Z",
+          "created_by": "/bin/sh -c #(nop) COPY dir:4b92eca773c49a7c09744260dde2db2c94f3522515a5a2df2e5fe0dda60ea047 in ./python/adapter_runtime/ "
+        },
+        {
+          "created": "2026-07-21T21:15:40Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:403ca43a33e7d46e04807f4a7763db6ea0907bc56116f0909ecfcc964afbccf1 in ./adapters/__init__.py "
+        },
+        {
+          "created": "2026-07-21T21:15:41Z",
+          "created_by": "/bin/sh -c #(nop) COPY dir:11ecdab951d743a4e6924eb174522176bf93adef6c5d4b94af97d313cec9545b in ./adapters/rby1/ "
+        },
+        {
+          "created": "2026-07-21T21:15:42Z",
+          "created_by": "|1 RBY1_SDK_VERSION=0.10.0 /bin/sh -c python scripts/generate-proto.py     \u0026\u0026 RBY1_USE_MOCK=1 python -m adapters.rby1.app self-test     \u0026\u0026 find /app -type d -name __pycache__ -prune -exec rm -rf '{}' +"
+        },
+        {
+          "created": "2026-07-21T21:15:43Z",
+          "created_by": "/bin/sh -c #(nop)  USER 10001:10001",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:15:44Z",
+          "created_by": "/bin/sh -c #(nop)  ENTRYPOINT [\"python\" \"-m\" \"adapters.rby1.app\"]",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:15:45Z",
+          "created_by": "/bin/sh -c #(nop)  CMD [\"serve\"]",
+          "empty_layer": true
+        }
+      ],
+      "os": "linux",
+      "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+          "sha256:f103cd120fdd6cbc7f3d0e1d5bfb3e16290c32ead7b822d15c34460ecdf64b29",
+          "sha256:03f1a436175de089abcf04cbf2707f7bd05ac525fd2746b465c3e46d41e54c32",
+          "sha256:c27e736c1b7243199263c1ff5d82d1fe3ff3b04005e7d407aa382463359045d2",
+          "sha256:a97db28b187b7047a8cb0c9f6827f6abe2d7e1e97f2a25c02c5ec0605e473918",
+          "sha256:5ddd6e81b87bf929c62911fded92c86989df514a157eab11df07453804db2be7",
+          "sha256:7c4ffdc666cb192b0bf83ba2c0d08d6903c4056efe49878cf2a42be5c51618d5",
+          "sha256:bd83f7aec442c38f1c5edbff2404bb013c3ff5c2869a13d1ec24e217b506f524",
+          "sha256:e97fc71d33d5664c9d59928ee17e204179cb172c594ad119022f2e1c1117dc68",
+          "sha256:16ab079267a0bd5a47c8b3728c450ad76d65671c28965a670047dd1e9600541e",
+          "sha256:1c735bbf9804adc1150afb4aa18ecda2fde3f8764e2afe6879eeea2a23af2157"
+        ]
+      },
+      "config": {
+        "Cmd": [
+          "serve"
+        ],
+        "Entrypoint": [
+          "python",
+          "-m",
+          "adapters.rby1.app"
+        ],
+        "Env": [
+          "PATH=/opt/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "DEBIAN_FRONTEND=noninteractive",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "PYTHONUNBUFFERED=1",
+          "PYTHONPATH=/app:/app/python"
+        ],
+        "Labels": {
+          "org.opencontainers.image.version": "24.04"
+        },
+        "User": "10001:10001",
+        "WorkingDir": "/app"
+      }
+    },
+    "Layers": [
+      {
+        "Size": 80655872,
+        "Digest": "sha256:ca2678b20700c15185707964d9211b1a6406196114bf675f568b6025d37b3888",
+        "DiffID": "sha256:f103cd120fdd6cbc7f3d0e1d5bfb3e16290c32ead7b822d15c34460ecdf64b29"
+      },
+      {
+        "Size": 202697216,
+        "Digest": "sha256:4d68a95e3f9a7caf3855a60e49a05318f16c3600bd275a2280058a975624842a",
+        "DiffID": "sha256:03f1a436175de089abcf04cbf2707f7bd05ac525fd2746b465c3e46d41e54c32"
+      },
+      {
+        "Size": 1536,
+        "Digest": "sha256:c445ef18a2f8821461a4ee4d48e59d563fef1afde6df1ca4cc2b45d107f49687",
+        "DiffID": "sha256:c27e736c1b7243199263c1ff5d82d1fe3ff3b04005e7d407aa382463359045d2"
+      },
+      {
+        "Size": 22016,
+        "Digest": "sha256:58d7ef75ef98be5ffe7c0dbd36ecc64f9eab064fcf2688215a24624a19ee1fe7",
+        "DiffID": "sha256:a97db28b187b7047a8cb0c9f6827f6abe2d7e1e97f2a25c02c5ec0605e473918"
+      },
+      {
+        "Size": 4096,
+        "Digest": "sha256:793f3c78893761ebb03dca97b5afebb0cebd82063821fbf29086c37fa75a917c",
+        "DiffID": "sha256:5ddd6e81b87bf929c62911fded92c86989df514a157eab11df07453804db2be7"
+      },
+      {
+        "Size": 3072,
+        "Digest": "sha256:b06edfd5b2b7a23ccec408f7116fed055220afc5f0287c2b6aed5e903eb2c12c",
+        "DiffID": "sha256:7c4ffdc666cb192b0bf83ba2c0d08d6903c4056efe49878cf2a42be5c51618d5"
+      },
+      {
+        "Size": 25600,
+        "Digest": "sha256:273c793c564c74f3ebed0ed746460bbf8554cd5e843f8e5092a08bb3b0fac449",
+        "DiffID": "sha256:bd83f7aec442c38f1c5edbff2404bb013c3ff5c2869a13d1ec24e217b506f524"
+      },
+      {
+        "Size": 3072,
+        "Digest": "sha256:588277e469ceb5bf9eab219153b0863d41302a974d7420934949337d4b37753a",
+        "DiffID": "sha256:e97fc71d33d5664c9d59928ee17e204179cb172c594ad119022f2e1c1117dc68"
+      },
+      {
+        "Size": 35328,
+        "Digest": "sha256:8defa410b801846e674d96866d7e171f0a123af832a6a7b3ec0e8a444a583ca0",
+        "DiffID": "sha256:16ab079267a0bd5a47c8b3728c450ad76d65671c28965a670047dd1e9600541e"
+      },
+      {
+        "Size": 132608,
+        "Digest": "sha256:ba092520199658bdc57714d83ceeb4e3fcd3a27fd77c924cb162ee1ae609206e",
+        "DiffID": "sha256:1c735bbf9804adc1150afb4aa18ecda2fde3f8764e2afe6879eeea2a23af2157"
+      }
+    ]
+  },
+  "Results": [
+    {
+      "Target": "robot-adapter-rby1:local (ubuntu 24.04)",
+      "Class": "os-pkgs",
+      "Type": "ubuntu"
+    },
+    {
+      "Target": "Python",
+      "Class": "lang-pkgs",
+      "Type": "python-pkg"
+    }
+  ]
+}

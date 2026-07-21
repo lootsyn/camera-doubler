@@ -17,6 +17,11 @@
 - Dataset Builder exact LeRobot pin, cadence gate, finalize/load-scan/atomic export transaction 추가
 - Receiver API에 canonical full anchor context와 exact CRC packet/PTS/AU ordinal 노출 추가
 - four-pass machine-readable validation evidence 추가
+- 전체 Phase 0–7 구현, 공식 RB-Y1 SDK 0.10.0 및 exact LeRobot 0.6.0 런타임 검증
+- Edge production healthcheck에 GStreamer plugin 및 24-AU SEI/MPEG-TS/decode conformance 통합
+- raw TS에서 synchronized step 24개를 두 번 재생성하는 bit-for-bit deterministic replay 추가
+- hardened Docker runtime, disk-pressure readiness fault, CycloneDX SBOM 및 fixable HIGH/CRITICAL 0건 검증
+- Chapter 29 전체 release audit와 machine-readable acceptance evidence 추가
 
 ## 2.0
 

@@ -1,20 +1,41 @@
 name: robot-multicam-edge
 
 services:
+  state-init:
+    image: busybox:1.36.1@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662
+    user: "0:0"
+    command: ["sh", "-c", "chown -R 10001:10001 /state /sockets && chmod 0770 /sockets"]
+    volumes:
+      - edge-state:/state
+      - adapter-sockets:/sockets
+    restart: "no"
+    cap_drop: ["ALL"]
+    cap_add: ["CHOWN", "FOWNER"]
+
   edge-core:
     build:
       context: .
       dockerfile: docker/Dockerfile.edge-core
     image: robot-multicam-edge-core:local
     env_file:
-      - .env.edge
+      - path: .env.edge
+        required: false
     network_mode: host
-    privileged: true # Reference only; minimize devices/capabilities in production.
     init: true
     restart: unless-stopped
     stop_grace_period: 15s
     cap_add:
       - SYS_NICE
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    user: "10001:10001"
+    device_cgroup_rules:
+      - "c 81:* rmw"
     volumes:
       - /dev:/dev
       - /run/udev:/run/udev:ro
@@ -22,6 +43,9 @@ services:
       - edge-state:/var/lib/robot-edge
       - adapter-sockets:/run/robot-adapters
       - ./config:/etc/robot-edge:ro
+    depends_on:
+      state-init:
+        condition: service_completed_successfully
     secrets:
       - srt_passphrase
       - srt_streamid_hmac_key
@@ -47,15 +71,27 @@ services:
       dockerfile: adapters/rby1/docker/Dockerfile
     image: robot-adapter-rby1:local
     env_file:
-      - .env.adapter-rby1
+      - path: .env.adapter-rby1
+        required: false
     network_mode: host
     init: true
     restart: unless-stopped
     stop_grace_period: 10s
+    user: "10001:10001"
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     volumes:
       - adapter-sockets:/run/robot-adapters
+    depends_on:
+      state-init:
+        condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "/usr/local/bin/adapter-rby1", "healthcheck"]
+      test: ["CMD", "python", "-m", "adapters.rby1.app", "healthcheck"]
       interval: 10s
       timeout: 3s
       retries: 6
@@ -65,6 +101,35 @@ services:
       options:
         max-size: 10m
         max-file: "3"
+
+  adapter-gripper-fixture:
+    profiles: ["fixture"]
+    build:
+      context: .
+      dockerfile: adapters/template/docker/Dockerfile
+    image: robot-adapter-template:local
+    entrypoint: ["python", "-m", "adapters.gripper_fixture.app"]
+    command: ["serve"]
+    environment:
+      ADAPTER_SOCKET: /run/robot-adapters/right-gripper.sock
+    user: "10001:10001"
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    volumes:
+      - adapter-sockets:/run/robot-adapters
+    depends_on:
+      state-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-m", "adapters.gripper_fixture.app", "healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   # Add other robot, gripper, base, or tool adapters as independent services.
 

@@ -1,0 +1,13 @@
+.git
+.cargo-home
+.rustup-home
+.tools
+.venv-rby1
+.venv-dataset
+target
+validation/runtime
+secrets/*
+!secrets/.gitignore
+__pycache__
+*.pyc
+.env.*

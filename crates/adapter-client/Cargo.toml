@@ -1,0 +1,23 @@
+[package]
+name = "robot-multicam-adapter-client"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+robot-multicam-protocol = { path = "../protocol" }
+hyper-util.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+serde_jcs = "=0.1.0"
+serde_yaml = "=0.9.34"
+sha2.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["net", "time"] }
+tokio-stream.workspace = true
+tonic.workspace = true
+tower.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,239 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2026-07-21T21:25:12.180607985Z",
+  "ArtifactName": "robot-multicam-dataset-builder:local",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "Size": 6288438272,
+    "OS": {
+      "Family": "debian",
+      "Name": "12.15"
+    },
+    "ImageID": "sha256:5f1e5b84c0a4ec02d0a9427debfedf49156e17e65e22bc6e716ad88552057c00",
+    "DiffIDs": [
+      "sha256:ace34d1d784c01e3f9d156687089e8f58f786e23ccd097bdbbf337d6d28b3783",
+      "sha256:edf2e8d9a6f19eeb93e6adb712ccda0d8e687effd6a79400f258d957f40321a1",
+      "sha256:4a0992abe543a127be2561cc40cd50315516bfbf9d6169f06f3f8d30166fa6ab",
+      "sha256:de0b11a690a6e81271e41db48dea18fc39104f7ba2034e2ecf6971586f66021b",
+      "sha256:146e0a7c97b12c9eab4511d05bc073ee46ecd4396d77f887f0ce694a4ba87a8e",
+      "sha256:16959c5ebcbc14757fc25d8290c2915a1b5ceee87a49b31f7c528fc94f4fb6ac",
+      "sha256:9edb5cc05ceb715c7449cceb11d37d79a1ff0b863a7532767b15936169a98fb8",
+      "sha256:7e086cc9eec2cba0e7f65d683d1513cec70341e7da4d5b97d1ea9b0a9f2f8064",
+      "sha256:4ff341c983b58d15b39da74da2bf2df8e98a567dd62397367152d5efcf0e5bee",
+      "sha256:1fa9963cb17662f3d1e338c8af731a384f235ae070d4563042f1585199b47972"
+    ],
+    "RepoTags": [
+      "robot-multicam-dataset-builder:local"
+    ],
+    "RepoDigests": [
+      "robot-multicam-dataset-builder@sha256:5f1e5b84c0a4ec02d0a9427debfedf49156e17e65e22bc6e716ad88552057c00"
+    ],
+    "ImageConfig": {
+      "architecture": "amd64",
+      "created": "2026-07-22T06:20:47.236092509+09:00",
+      "history": [
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "# debian.sh --arch 'amd64' out/ 'bookworm' '@1747699200'",
+          "comment": "debuerreotype 0.15"
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "ENV PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "ENV LANG=C.UTF-8",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "RUN /bin/sh -c set -eux; \tapt-get update; \tapt-get install -y --no-install-recommends \t\tca-certificates \t\tnetbase \t\ttzdata \t; \trm -rf /var/lib/apt/lists/* # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "ENV GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "ENV PYTHON_VERSION=3.12.10",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "ENV PYTHON_SHA256=07ab697474595e06f06647417d3c7fa97ded07afc1a7e4454c5639919b46eaea",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "RUN /bin/sh -c set -eux; \t\tsavedAptMark=\"$(apt-mark showmanual)\"; \tapt-get update; \tapt-get install -y --no-install-recommends \t\tdpkg-dev \t\tgcc \t\tgnupg \t\tlibbluetooth-dev \t\tlibbz2-dev \t\tlibc6-dev \t\tlibdb-dev \t\tlibffi-dev \t\tlibgdbm-dev \t\tliblzma-dev \t\tlibncursesw5-dev \t\tlibreadline-dev \t\tlibsqlite3-dev \t\tlibssl-dev \t\tmake \t\ttk-dev \t\tuuid-dev \t\twget \t\txz-utils \t\tzlib1g-dev \t; \t\twget -O python.tar.xz \"https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz\"; \techo \"$PYTHON_SHA256 *python.tar.xz\" | sha256sum -c -; \twget -O python.tar.xz.asc \"https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc\"; \tGNUPGHOME=\"$(mktemp -d)\"; export GNUPGHOME; \tgpg --batch --keyserver hkps://keys.openpgp.org --recv-keys \"$GPG_KEY\"; \tgpg --batch --verify python.tar.xz.asc python.tar.xz; \tgpgconf --kill all; \trm -rf \"$GNUPGHOME\" python.tar.xz.asc; \tmkdir -p /usr/src/python; \ttar --extract --directory /usr/src/python --strip-components=1 --file python.tar.xz; \trm python.tar.xz; \t\tcd /usr/src/python; \tgnuArch=\"$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)\"; \t./configure \t\t--build=\"$gnuArch\" \t\t--enable-loadable-sqlite-extensions \t\t--enable-optimizations \t\t--enable-option-checking=fatal \t\t--enable-shared \t\t$(test \"$gnuArch\" != 'riscv64-linux-musl' \u0026\u0026 echo '--with-lto') \t\t--with-ensurepip \t; \tnproc=\"$(nproc)\"; \tEXTRA_CFLAGS=\"$(dpkg-buildflags --get CFLAGS)\"; \tLDFLAGS=\"$(dpkg-buildflags --get LDFLAGS)\"; \tLDFLAGS=\"${LDFLAGS:--Wl},--strip-all\"; \t\tarch=\"$(dpkg --print-architecture)\"; arch=\"${arch##*-}\"; \t\tcase \"$arch\" in \t\t\tamd64|arm64) \t\t\t\tEXTRA_CFLAGS=\"${EXTRA_CFLAGS:-} -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer\"; \t\t\t\t;; \t\t\ti386) \t\t\t\t;; \t\t\t*) \t\t\t\tEXTRA_CFLAGS=\"${EXTRA_CFLAGS:-} -fno-omit-frame-pointer\"; \t\t\t\t;; \t\tesac; \tmake -j \"$nproc\" \t\t\"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}\" \t\t\"LDFLAGS=${LDFLAGS:-}\" \t; \trm python; \tmake -j \"$nproc\" \t\t\"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}\" \t\t\"LDFLAGS=${LDFLAGS:--Wl},-rpath='\\$\\$ORIGIN/../lib'\" \t\tpython \t; \tmake install; \t\tcd /; \trm -rf /usr/src/python; \t\tfind /usr/local -depth \t\t\\( \t\t\t\\( -type d -a \\( -name test -o -name tests -o -name idle_test \\) \\) \t\t\t-o \\( -type f -a \\( -name '*.pyc' -o -name '*.pyo' -o -name 'libpython*.a' \\) \\) \t\t\\) -exec rm -rf '{}' + \t; \t\tldconfig; \t\tapt-mark auto '.*' \u003e /dev/null; \tapt-mark manual $savedAptMark; \tfind /usr/local -type f -executable -not \\( -name '*tkinter*' \\) -exec ldd '{}' ';' \t\t| awk '/=\u003e/ { so = $(NF-1); if (index(so, \"/usr/local/\") == 1) { next }; gsub(\"^/(usr/)?\", \"\", so); printf \"*%s\\n\", so }' \t\t| sort -u \t\t| xargs -r dpkg-query --search \t\t| cut -d: -f1 \t\t| sort -u \t\t| xargs -r apt-mark manual \t; \tapt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \trm -rf /var/lib/apt/lists/*; \t\texport PYTHONDONTWRITEBYTECODE=1; \tpython3 --version; \tpip3 --version # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "RUN /bin/sh -c set -eux; \tfor src in idle3 pip3 pydoc3 python3 python3-config; do \t\tdst=\"$(echo \"$src\" | tr -d 3)\"; \t\t[ -s \"/usr/local/bin/$src\" ]; \t\t[ ! -e \"/usr/local/bin/$dst\" ]; \t\tln -svT \"$src\" \"/usr/local/bin/$dst\"; \tdone # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-05-08T22:27:23Z",
+          "created_by": "CMD [\"python3\"]",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:14:49Z",
+          "created_by": "/bin/sh -c #(nop)  ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:15:46Z",
+          "created_by": "/bin/sh -c apt-get update \u0026\u0026 apt-get upgrade -y     \u0026\u0026 apt-get install -y --no-install-recommends ffmpeg     \u0026\u0026 rm -rf /var/lib/apt/lists/*"
+        },
+        {
+          "created": "2026-07-21T21:15:51Z",
+          "created_by": "/bin/sh -c groupadd --gid 10001 dataset     \u0026\u0026 useradd --uid 10001 --gid dataset --no-create-home --shell /usr/sbin/nologin dataset"
+        },
+        {
+          "created": "2026-07-21T21:15:52Z",
+          "created_by": "/bin/sh -c #(nop) WORKDIR /app"
+        },
+        {
+          "created": "2026-07-21T21:15:53Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:7ad3d80e424171f28d1f32e29dc79c74162faf6f7a2a30d2892b4c07d7cb9a09 in ./requirements.lock "
+        },
+        {
+          "created": "2026-07-21T21:19:55Z",
+          "created_by": "/bin/sh -c pip install --no-cache-dir -r requirements.lock     \u0026\u0026 pip check"
+        },
+        {
+          "created": "2026-07-21T21:20:33Z",
+          "created_by": "/bin/sh -c #(nop) COPY dir:7b2ac343514a5b8b1edea7d79e0bb4be595fe4d8b11cd6135757bf6d96797d05 in ./ "
+        },
+        {
+          "created": "2026-07-21T21:20:38Z",
+          "created_by": "/bin/sh -c #(nop)  ENV HOME=/tmp HF_HOME=/tmp/huggingface XDG_CACHE_HOME=/tmp/.cache",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:20:42Z",
+          "created_by": "/bin/sh -c #(nop)  USER 10001:10001",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:20:47Z",
+          "created_by": "/bin/sh -c #(nop)  ENTRYPOINT [\"python\" \"-m\" \"app\"]",
+          "empty_layer": true
+        }
+      ],
+      "os": "linux",
+      "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+          "sha256:ace34d1d784c01e3f9d156687089e8f58f786e23ccd097bdbbf337d6d28b3783",
+          "sha256:edf2e8d9a6f19eeb93e6adb712ccda0d8e687effd6a79400f258d957f40321a1",
+          "sha256:4a0992abe543a127be2561cc40cd50315516bfbf9d6169f06f3f8d30166fa6ab",
+          "sha256:de0b11a690a6e81271e41db48dea18fc39104f7ba2034e2ecf6971586f66021b",
+          "sha256:146e0a7c97b12c9eab4511d05bc073ee46ecd4396d77f887f0ce694a4ba87a8e",
+          "sha256:16959c5ebcbc14757fc25d8290c2915a1b5ceee87a49b31f7c528fc94f4fb6ac",
+          "sha256:9edb5cc05ceb715c7449cceb11d37d79a1ff0b863a7532767b15936169a98fb8",
+          "sha256:7e086cc9eec2cba0e7f65d683d1513cec70341e7da4d5b97d1ea9b0a9f2f8064",
+          "sha256:4ff341c983b58d15b39da74da2bf2df8e98a567dd62397367152d5efcf0e5bee",
+          "sha256:1fa9963cb17662f3d1e338c8af731a384f235ae070d4563042f1585199b47972"
+        ]
+      },
+      "config": {
+        "Entrypoint": [
+          "python",
+          "-m",
+          "app"
+        ],
+        "Env": [
+          "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "LANG=C.UTF-8",
+          "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+          "PYTHON_VERSION=3.12.10",
+          "PYTHON_SHA256=07ab697474595e06f06647417d3c7fa97ded07afc1a7e4454c5639919b46eaea",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "PYTHONUNBUFFERED=1",
+          "HOME=/tmp",
+          "HF_HOME=/tmp/huggingface",
+          "XDG_CACHE_HOME=/tmp/.cache"
+        ],
+        "User": "10001:10001",
+        "WorkingDir": "/app"
+      }
+    },
+    "Layers": [
+      {
+        "Size": 77875200,
+        "Digest": "sha256:61320b01ae5e0798393ef25f2dc72faf43703e60ba089b07d7170acbabbf8f62",
+        "DiffID": "sha256:ace34d1d784c01e3f9d156687089e8f58f786e23ccd097bdbbf337d6d28b3783"
+      },
+      {
+        "Size": 9551360,
+        "Digest": "sha256:be1274d3cce09d8126f8176203ba1e91f6733a713c1185ba01ee704759b0b62d",
+        "DiffID": "sha256:edf2e8d9a6f19eeb93e6adb712ccda0d8e687effd6a79400f258d957f40321a1"
+      },
+      {
+        "Size": 41565184,
+        "Digest": "sha256:8991c9200d621283b06ae395129d454c998e0f55095e106055240b5956ab2a2a",
+        "DiffID": "sha256:4a0992abe543a127be2561cc40cd50315516bfbf9d6169f06f3f8d30166fa6ab"
+      },
+      {
+        "Size": 5120,
+        "Digest": "sha256:7a1cb8b882211b870d7e639e775f91e423a526092b4b3eadefbab6aa7457910d",
+        "DiffID": "sha256:de0b11a690a6e81271e41db48dea18fc39104f7ba2034e2ecf6971586f66021b"
+      },
+      {
+        "Size": 508279808,
+        "Digest": "sha256:104a2bd9c7d2e91612b4c6c2a8389cf82228e658f034b3e78c89f0023decaaba",
+        "DiffID": "sha256:146e0a7c97b12c9eab4511d05bc073ee46ecd4396d77f887f0ce694a4ba87a8e"
+      },
+      {
+        "Size": 13824,
+        "Digest": "sha256:8995d27d114ceb1ef818de1be4a84acc2e7c5e2352e3b5d292a08a117b8c62d8",
+        "DiffID": "sha256:16959c5ebcbc14757fc25d8290c2915a1b5ceee87a49b31f7c528fc94f4fb6ac"
+      },
+      {
+        "Size": 1536,
+        "Digest": "sha256:8b051ff5b06bfbbe0159cb8b0e25578b173a746d4ca709e38e06454cf17fcbd1",
+        "DiffID": "sha256:9edb5cc05ceb715c7449cceb11d37d79a1ff0b863a7532767b15936169a98fb8"
+      },
+      {
+        "Size": 4096,
+        "Digest": "sha256:97382f7ff965317e694cdd48a90e788a1f4c243f1aba377a245ee34f2cfb03ac",
+        "DiffID": "sha256:7e086cc9eec2cba0e7f65d683d1513cec70341e7da4d5b97d1ea9b0a9f2f8064"
+      },
+      {
+        "Size": 5651082240,
+        "Digest": "sha256:276a35d5e310c7c42a3faea9c44dd819f52ff74144cdb72c1789da2d077adf53",
+        "DiffID": "sha256:4ff341c983b58d15b39da74da2bf2df8e98a567dd62397367152d5efcf0e5bee"
+      },
+      {
+        "Size": 59904,
+        "Digest": "sha256:4689d9692bc6cc93f7a3d6ee49316d2a0a1fa4b4664f1f0225ef9c2b6e0bae7a",
+        "DiffID": "sha256:1fa9963cb17662f3d1e338c8af731a384f235ae070d4563042f1585199b47972"
+      }
+    ]
+  },
+  "Results": [
+    {
+      "Target": "robot-multicam-dataset-builder:local (debian 12.15)",
+      "Class": "os-pkgs",
+      "Type": "debian"
+    },
+    {
+      "Target": "Python",
+      "Class": "lang-pkgs",
+      "Type": "python-pkg"
+    }
+  ]
+}

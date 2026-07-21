@@ -1,0 +1,133 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2026-07-21T21:58:03.852012748Z",
+  "ArtifactName": "robot-multicam-edge-core:local",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "Size": 696829952,
+    "OS": {
+      "Family": "debian",
+      "Name": "12.15"
+    },
+    "ImageID": "sha256:828dbde52902b256824241f831336a67975d98e885944cb883bee2d29b073918",
+    "DiffIDs": [
+      "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a",
+      "sha256:f95befdd4c56676d177568b88f6076e46ca1b0980047ee9c9d8f63763be792cc",
+      "sha256:6fa7cac90fe064ba1e4e49014e39d428165eedf7ba6bf78533ff1623d5cc8c25",
+      "sha256:e10777002630c224a7b7101aa85ec2f59d0d06c010cc0d843ba683e2865bf78c",
+      "sha256:583fdcf8dc7f4434f31c402b655432952ad8b0b8d76df02276dd46efe49a8dc5"
+    ],
+    "RepoTags": [
+      "robot-multicam-edge-core:local"
+    ],
+    "RepoDigests": [
+      "robot-multicam-edge-core@sha256:828dbde52902b256824241f831336a67975d98e885944cb883bee2d29b073918"
+    ],
+    "ImageConfig": {
+      "architecture": "amd64",
+      "created": "2026-07-22T06:53:53.316957027+09:00",
+      "history": [
+        {
+          "created": "2026-07-13T00:00:00Z",
+          "created_by": "# debian.sh --arch 'amd64' out/ 'bookworm' '@1783900800'",
+          "comment": "debuerreotype 0.17"
+        },
+        {
+          "created": "2026-07-21T21:37:52Z",
+          "created_by": "/bin/sh -c apt-get update \u0026\u0026 apt-get install -y --no-install-recommends       ca-certificates v4l-utils libudev1 libv4l-0 libssl3       gstreamer1.0-tools       gstreamer1.0-plugins-base       gstreamer1.0-plugins-good       gstreamer1.0-plugins-bad       gstreamer1.0-plugins-ugly       gstreamer1.0-libav     \u0026\u0026 rm -rf /var/lib/apt/lists/*"
+        },
+        {
+          "created": "2026-07-21T21:39:01Z",
+          "created_by": "/bin/sh -c #(nop)  ENV HOME=/tmp XDG_CACHE_HOME=/tmp/.cache",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:39:04Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:c512c5ba685f3bc5bc610c20d6b05dccc82d3a9891813b986dce0897c12eb9f6 in /usr/local/bin/robot-edge-core "
+        },
+        {
+          "created": "2026-07-21T21:53:43Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:2c84773d27aa21237162daf985c25cc0a6f5eef2805d76577a9ef63834001c12 in /usr/local/bin/robot-synthetic-roundtrip "
+        },
+        {
+          "created": "2026-07-21T21:53:48Z",
+          "created_by": "/bin/sh -c groupadd --gid 10001 edge     \u0026\u0026 useradd --uid 10001 --gid edge --groups video --no-create-home --shell /usr/sbin/nologin edge"
+        },
+        {
+          "created": "2026-07-21T21:53:50Z",
+          "created_by": "/bin/sh -c #(nop)  USER 10001:10001",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:53:51Z",
+          "created_by": "/bin/sh -c #(nop)  ENTRYPOINT [\"/usr/local/bin/robot-edge-core\"]",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:53:53Z",
+          "created_by": "/bin/sh -c #(nop)  CMD [\"serve\"]",
+          "empty_layer": true
+        }
+      ],
+      "os": "linux",
+      "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+          "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a",
+          "sha256:f95befdd4c56676d177568b88f6076e46ca1b0980047ee9c9d8f63763be792cc",
+          "sha256:6fa7cac90fe064ba1e4e49014e39d428165eedf7ba6bf78533ff1623d5cc8c25",
+          "sha256:e10777002630c224a7b7101aa85ec2f59d0d06c010cc0d843ba683e2865bf78c",
+          "sha256:583fdcf8dc7f4434f31c402b655432952ad8b0b8d76df02276dd46efe49a8dc5"
+        ]
+      },
+      "config": {
+        "Cmd": [
+          "serve"
+        ],
+        "Entrypoint": [
+          "/usr/local/bin/robot-edge-core"
+        ],
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "HOME=/tmp",
+          "XDG_CACHE_HOME=/tmp/.cache"
+        ],
+        "User": "10001:10001"
+      }
+    },
+    "Layers": [
+      {
+        "Size": 77895680,
+        "Digest": "sha256:597c6c618d36213af657a6a8444a5d87801f9a219682b206ad21ccb8f3e57bbd",
+        "DiffID": "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a"
+      },
+      {
+        "Size": 602744320,
+        "Digest": "sha256:b5794002ff9abdfaca6e446d1bd09446a38b43bd38983b3bbc92e00b702d1e65",
+        "DiffID": "sha256:f95befdd4c56676d177568b88f6076e46ca1b0980047ee9c9d8f63763be792cc"
+      },
+      {
+        "Size": 14709760,
+        "Digest": "sha256:139dfb4638342a43aea6de2521947ec0dc2823fa939b33d1ccae14293c575a81",
+        "DiffID": "sha256:6fa7cac90fe064ba1e4e49014e39d428165eedf7ba6bf78533ff1623d5cc8c25"
+      },
+      {
+        "Size": 1464832,
+        "Digest": "sha256:98f5539b059824d826a61d0fb99c7c6e5201bbb19d5054c3c386792ea647c271",
+        "DiffID": "sha256:e10777002630c224a7b7101aa85ec2f59d0d06c010cc0d843ba683e2865bf78c"
+      },
+      {
+        "Size": 15360,
+        "Digest": "sha256:41f09450fc4b8a1984ecf7252d0910c4d9b2a39258219e4077e42c639ba4d5ac",
+        "DiffID": "sha256:583fdcf8dc7f4434f31c402b655432952ad8b0b8d76df02276dd46efe49a8dc5"
+      }
+    ]
+  },
+  "Results": [
+    {
+      "Target": "robot-multicam-edge-core:local (debian 12.15)",
+      "Class": "os-pkgs",
+      "Type": "debian"
+    }
+  ]
+}

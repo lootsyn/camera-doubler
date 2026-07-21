@@ -2,7 +2,7 @@
 
 - Review date: 2026-07-21
 - Reviewed artifact root: `robot_multicamera_backend_spec_v2_1/`
-- Result: **Specification/static-package review passed; implementation and hardware gates remain**
+- Result: **Specification/static-package review passed; 2026-07-22 implementation follow-up completed with physical hardware gates remaining**
 - Review model: four independent passes with different failure assumptions
 
 ## 1. Review scope
@@ -259,3 +259,18 @@ No additional specification blocker was found after the fourth pass. The revised
 - and how vendor-specific robot/component logic remains replaceable.
 
 Production readiness still depends on the mandatory implementation and hardware gates listed above.
+
+## 10. Implementation follow-up — 2026-07-22
+
+The implementation project subsequently closed every environment/tool gate and all software-executable mandatory gates. Docker 29.1.3, Compose 2.40.3, GStreamer 1.24.2, protoc, shellcheck, official `rby1-sdk==0.10.0`, and exact `lerobot==0.6.0` were installed and run.
+
+- Locked workspace format/Clippy/tests passed: 46 Rust tests, zero failures.
+- Five Docker images built and ran under least-privilege constraints.
+- The deployed Edge healthcheck ran the real 24-AU H.264/SEI/MPEG-TS/predecode/decode conformance path.
+- Authenticated encrypted SRT accepted the same signed raw stream twice while Receiver remained ready.
+- Raw replay verified envelope/index/hash and reproduced 24 synchronized protobuf steps bit-for-bit on two passes.
+- Dataset Builder passed five exact-version transactional/export/loader tests.
+- Five CycloneDX SBOMs were generated; Trivy reported zero fixable HIGH/CRITICAL findings.
+- Actual package ZIP contents were inspected for toolchain, target, venv, local env, and secret exclusion.
+
+The authoritative final classification is in `docs/audit/FINAL_RELEASE_AUDIT.md`. Remaining gates require physical USB cameras/v4l2loopback, actual RB-Y1 motion, target-host camera-capacity measurement, or common-event timestamp calibration; none is `BLOCKED_ENVIRONMENT`.

@@ -11,3 +11,15 @@ __pycache__/
 *.pyc
 *.zip
 SHA256SUMS
+target/
+.tools/
+.cargo-home/
+.rustup-home/
+.venv-rby1/
+.venv-dataset/
+python/generated/
+validation/runtime/
+__pycache__/
+*.pyc
+generated/python/
+*.tmp

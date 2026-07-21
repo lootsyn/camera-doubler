@@ -1,0 +1,55 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/common",
+  "crates/protocol",
+  "crates/timebase",
+  "crates/metadata-codec",
+  "crates/stream-identity",
+  "crates/camera-discovery",
+  "crates/virtual-camera",
+  "crates/adapter-client",
+  "crates/edge-core",
+  "crates/receiver",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "Apache-2.0"
+
+[workspace.dependencies]
+anyhow = "=1.0.95"
+async-trait = "=0.1.86"
+base64 = "=0.22.1"
+blake3 = "=1.5.5"
+bytes = "=1.9.0"
+crc32c = "=0.6.8"
+fs2 = "=0.4.3"
+hex = "=0.4.3"
+hmac = "=0.12.1"
+hyper-util = { version = "=0.1.20", features = ["tokio"] }
+percent-encoding = "=2.3.1"
+prost = "=0.13.4"
+prost-types = "=0.13.4"
+regex = "=1.11.1"
+serde = "=1.0.219"
+serde_json = "=1.0.140"
+sha2 = "=0.10.8"
+tempfile = "=3.16.0"
+thiserror = "=2.0.11"
+tokio = "=1.43.0"
+tokio-stream = "=0.1.17"
+toml = { version = "=0.8.22", default-features = false, features = ["parse"] }
+tonic = { version = "=0.12.3", features = ["tls"] }
+tower = "=0.4.13"
+tracing = "=0.1.41"
+tracing-subscriber = "=0.3.19"
+uuid = "=1.12.1"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }

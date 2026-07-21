@@ -1,0 +1,126 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2026-07-21T21:58:24.853365169Z",
+  "ArtifactName": "robot-multicam-receiver:local",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "Size": 688697344,
+    "OS": {
+      "Family": "debian",
+      "Name": "12.15"
+    },
+    "ImageID": "sha256:5fe0f6fdbf8fefc8363f46ec6819be466bc40ea113e587a15445e2d7412a434e",
+    "DiffIDs": [
+      "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a",
+      "sha256:c19700f0e2a2b569271c3b3a4a414f1412ee0940b357f97955d9ecd4b1af2c79",
+      "sha256:e9475a9f620cac3004ce99b47c83cb8a21ddeaeed7fd7d60ddb09fe659fc2537",
+      "sha256:24f276183486c51970f10427f3c91d36395b1925a24c7c30ce80e1af4b1ad39a",
+      "sha256:b82d2534e7a67f6bc6ce03cb225f2df5038bfd0ff1841166b5c35d2a8edab8f7"
+    ],
+    "RepoTags": [
+      "robot-multicam-receiver:local"
+    ],
+    "RepoDigests": [
+      "robot-multicam-receiver@sha256:5fe0f6fdbf8fefc8363f46ec6819be466bc40ea113e587a15445e2d7412a434e"
+    ],
+    "ImageConfig": {
+      "architecture": "amd64",
+      "created": "2026-07-22T06:49:56.220997245+09:00",
+      "history": [
+        {
+          "created": "2026-07-13T00:00:00Z",
+          "created_by": "# debian.sh --arch 'amd64' out/ 'bookworm' '@1783900800'",
+          "comment": "debuerreotype 0.17"
+        },
+        {
+          "created": "2026-07-21T21:49:37Z",
+          "created_by": "/bin/sh -c apt-get update \u0026\u0026 apt-get install -y --no-install-recommends       ca-certificates libssl3       gstreamer1.0-tools       gstreamer1.0-plugins-base       gstreamer1.0-plugins-good       gstreamer1.0-plugins-bad       gstreamer1.0-plugins-ugly       gstreamer1.0-libav     \u0026\u0026 rm -rf /var/lib/apt/lists/*"
+        },
+        {
+          "created": "2026-07-21T21:49:48Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:05193b86463b1e8f2fc4f48e77cebfd653c2291e9c585613563e3037f091b3f6 in /usr/local/bin/robot-multicam-receiver "
+        },
+        {
+          "created": "2026-07-21T21:49:49Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:2b5487810039eb93d94621c10b4bb952fd7ee4784522d0b89fc616fee01f8a35 in /usr/local/bin/robot-replay-verify "
+        },
+        {
+          "created": "2026-07-21T21:49:51Z",
+          "created_by": "/bin/sh -c groupadd --gid 10001 receiver     \u0026\u0026 useradd --uid 10001 --gid receiver --no-create-home --shell /usr/sbin/nologin receiver"
+        },
+        {
+          "created": "2026-07-21T21:49:53Z",
+          "created_by": "/bin/sh -c #(nop)  USER 10001:10001",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:49:54Z",
+          "created_by": "/bin/sh -c #(nop)  ENTRYPOINT [\"/usr/local/bin/robot-multicam-receiver\"]",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-21T21:49:56Z",
+          "created_by": "/bin/sh -c #(nop)  CMD [\"serve\"]",
+          "empty_layer": true
+        }
+      ],
+      "os": "linux",
+      "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+          "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a",
+          "sha256:c19700f0e2a2b569271c3b3a4a414f1412ee0940b357f97955d9ecd4b1af2c79",
+          "sha256:e9475a9f620cac3004ce99b47c83cb8a21ddeaeed7fd7d60ddb09fe659fc2537",
+          "sha256:24f276183486c51970f10427f3c91d36395b1925a24c7c30ce80e1af4b1ad39a",
+          "sha256:b82d2534e7a67f6bc6ce03cb225f2df5038bfd0ff1841166b5c35d2a8edab8f7"
+        ]
+      },
+      "config": {
+        "Cmd": [
+          "serve"
+        ],
+        "Entrypoint": [
+          "/usr/local/bin/robot-multicam-receiver"
+        ],
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "User": "10001:10001"
+      }
+    },
+    "Layers": [
+      {
+        "Size": 77895680,
+        "Digest": "sha256:597c6c618d36213af657a6a8444a5d87801f9a219682b206ad21ccb8f3e57bbd",
+        "DiffID": "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a"
+      },
+      {
+        "Size": 600366080,
+        "Digest": "sha256:a0dbc2f457db07bcb4eccd4e1a348e602140d9b5533ae2626c5732b9516c999a",
+        "DiffID": "sha256:c19700f0e2a2b569271c3b3a4a414f1412ee0940b357f97955d9ecd4b1af2c79"
+      },
+      {
+        "Size": 8853504,
+        "Digest": "sha256:07e8ec239f8d81c58bad386f22da50e779f83efd0b8e923fc187efe997d9ad6b",
+        "DiffID": "sha256:e9475a9f620cac3004ce99b47c83cb8a21ddeaeed7fd7d60ddb09fe659fc2537"
+      },
+      {
+        "Size": 1566720,
+        "Digest": "sha256:4750e670c207447c91993b7478c96a242777ff4726cf9c65f29924da570ea1d3",
+        "DiffID": "sha256:24f276183486c51970f10427f3c91d36395b1925a24c7c30ce80e1af4b1ad39a"
+      },
+      {
+        "Size": 15360,
+        "Digest": "sha256:92b23021e008c47c19401fceb4baa7387394dba68251cb9c3c4ae54e5c45642a",
+        "DiffID": "sha256:b82d2534e7a67f6bc6ce03cb225f2df5038bfd0ff1841166b5c35d2a8edab8f7"
+      }
+    ]
+  },
+  "Results": [
+    {
+      "Target": "robot-multicam-receiver:local (debian 12.15)",
+      "Class": "os-pkgs",
+      "Type": "debian"
+    }
+  ]
+}
