@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package robot.receiver.v1;
+
+import "frame_metadata.proto";
+
+service ReceiverMetadata {
+  rpc ListCameras(ListCamerasRequest) returns (ListCamerasResponse);
+  rpc GetAnchor(GetAnchorRequest) returns (GetAnchorResponse);
+  rpc GetSessionManifest(GetSessionManifestRequest) returns (GetSessionManifestResponse);
+  rpc GetSessionQuality(GetSessionQualityRequest) returns (GetSessionQualityResponse);
+  rpc SubscribeSynchronizedSteps(SubscribeSynchronizedStepsRequest)
+      returns (stream SynchronizedDatasetStep);
+}
+
+message ListCamerasRequest { bytes session_id = 1; }
+
+message CameraStatus {
+  string camera_id = 1;
+  uint32 stream_slot = 2;
+  uint32 stream_epoch = 3;
+  uint32 listen_port = 4;
+  string provisional_role = 5;
+  bool manifest_validated = 6;
+  bool required_for_dataset = 7;
+  bool connected = 8;
+  fixed64 last_capture_time_edge_ns = 9;
+  string health = 10;
+}
+
+message ListCamerasResponse {
+  bytes session_id = 1;
+  repeated CameraStatus cameras = 2;
+}
+
+message GetAnchorRequest { bytes session_id = 1; }
+
+message GetAnchorResponse {
+  bytes session_id = 1;
+  string anchor_camera_id = 2;
+  bool authoritative = 3;
+  fixed64 manifest_revision = 4;
+}
+
+message GetSessionManifestRequest {
+  bytes session_id = 1;
+  fixed64 manifest_revision = 2;        // Zero means active revision.
+}
+
+message GetSessionManifestResponse {
+  bytes session_id = 1;
+  fixed64 manifest_revision = 2;
+  bytes serialized_session_manifest = 3;
+}
+
+message GetSessionQualityRequest { bytes session_id = 1; }
+
+message CameraQuality {
+  string camera_id = 1;
+  fixed64 received_frames = 2;
+  fixed64 missing_timestamp_frames = 3;
+  fixed64 non_monotonic_timestamp_frames = 4;
+  double skew_p50_ms = 5;
+  double skew_p95_ms = 6;
+  double skew_max_ms = 7;
+}
+
+message GetSessionQualityResponse {
+  bytes session_id = 1;
+  repeated CameraQuality cameras = 2;
+  fixed64 accepted_steps = 3;
+  fixed64 dropped_steps = 4;
+  repeated string warnings = 5;
+}
+
+message SubscribeSynchronizedStepsRequest {
+  bytes session_id = 1;
+  bool include_encoded_images = 2;
+  repeated string camera_ids = 3;       // Empty means manifest dataset set.
+}
+
+message FrameReference {
+  string camera_id = 1;
+  fixed64 capture_time_edge_ns = 2;
+  sint64 skew_from_anchor_ns = 3;
+  string storage_uri = 4;
+  string preview_uri = 5;
+  bytes encoded_image = 6;              // Optional; empty by default.
+  string encoded_image_media_type = 7;
+  uint32 stream_epoch = 8;
+  fixed64 normalized_pts_ns = 9;
+  fixed64 access_unit_ordinal = 10;
+}
+
+message DeviceQuality {
+  string device_id = 1;
+  bool valid = 2;
+  fixed64 max_feature_gap_ns = 3;
+  sint64 clock_residual_ns = 4;
+  string reason = 5;
+}
+
+message SynchronizedDatasetStep {
+  bytes session_id = 1;
+  fixed64 manifest_revision = 2;
+  fixed64 capture_time_edge_ns = 3;
+  repeated FrameReference frames = 4;
+  repeated float observation_state = 5 [packed = true];
+  repeated float action = 6 [packed = true];
+  repeated float auxiliary = 7 [packed = true];
+  repeated DeviceQuality device_quality = 8;
+  bool valid = 9;
+  string invalid_reason = 10;
+
+  // Canonical complete anchor metadata. The flat fields above are convenience
+  // mirrors and MUST numerically match this decoded message.
+  robot.multicam.v2.AnchorFrameContextV1 anchor_context = 11;
+
+  // Exact CRC-protected packet received from the anchor AU, retained for
+  // auditing/replay without protobuf reserialization ambiguity.
+  robot.multicam.v2.AnchorFrameContextPacketV1 anchor_context_packet = 12;
+}

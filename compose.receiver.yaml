@@ -1,0 +1,102 @@
+name: robot-multicam-receiver
+
+services:
+  data-init:
+    image: busybox:1.36
+    user: "0:0"
+    command: ["sh", "-c", "chown -R 10001:10001 /data"]
+    volumes:
+      - receiver-data:/data
+    restart: "no"
+
+  receiver:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.receiver
+    image: robot-multicam-receiver:local
+    env_file:
+      - .env.receiver
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 20s
+    ports:
+      - "8080:8080/tcp"
+      - "8083:8083/tcp"
+      - "9090:9090/tcp"
+      # Reference range; must match SRT_LISTEN_BASE_PORT and MAX_CAMERAS.
+      - "10000-10015:10000-10015/udp"
+    volumes:
+      - receiver-data:/data
+      - ./config:/etc/robot-receiver:ro
+    secrets:
+      - srt_passphrase
+      - srt_streamid_hmac_key
+      - edge_control_ca
+      - edge_control_client_cert
+      - edge_control_client_key
+    depends_on:
+      data-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/robot-multicam-receiver", "healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 20s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      driver: local
+      options:
+        max-size: 20m
+        max-file: "5"
+
+  # Dataset build failure must not prevent ingest/preview.
+  dataset-builder:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dataset-builder
+    image: robot-multicam-dataset-builder:local
+    env_file:
+      - .env.dataset-builder
+    init: true
+    restart: unless-stopped
+    volumes:
+      - receiver-data:/data
+    expose:
+      - "8090"
+    depends_on:
+      data-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      driver: local
+      options:
+        max-size: 20m
+        max-file: "5"
+
+volumes:
+  receiver-data:
+
+secrets:
+  srt_passphrase:
+    file: ./secrets/srt_passphrase.txt
+  srt_streamid_hmac_key:
+    file: ./secrets/srt_streamid_hmac_key.bin
+  edge_control_ca:
+    file: ./secrets/edge_control_ca.pem
+  edge_control_client_cert:
+    file: ./secrets/edge_control_client.crt
+  edge_control_client_key:
+    file: ./secrets/edge_control_client.key

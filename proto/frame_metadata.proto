@@ -1,0 +1,251 @@
+syntax = "proto3";
+
+package robot.multicam.v2;
+
+// In-band video metadata contract.
+//
+// Transport invariants:
+// - Every coded-picture video access unit carries exactly one SyncTimestampV1 SEI.
+// - Only the configured anchor camera may carry AnchorFrameContextPacketV1 and
+//   SessionManifestChunkV1 SEI payloads.
+// - The user_data_unregistered SEI UUID identifies the payload type/version.
+// - Camera/session identity is carried in the SRT stream ID and persisted by
+//   the Receiver in a connection-level stream envelope. It is intentionally
+//   not repeated in non-anchor per-frame metadata.
+
+message SyncTimestampV1 {
+  // Common Edge Timebase capture timestamp. Zero is invalid and MUST NOT be
+  // used for dataset synchronization.
+  fixed64 capture_time_edge_ns = 1;
+}
+
+enum TimestampQuality {
+  TIMESTAMP_QUALITY_UNSPECIFIED = 0;
+  TIMESTAMP_QUALITY_HARDWARE_CAPTURE = 1;
+  TIMESTAMP_QUALITY_V4L2_DRIVER = 2;
+  TIMESTAMP_QUALITY_GSTREAMER_RUNNING_TIME = 3;
+  TIMESTAMP_QUALITY_EDGE_DEQUEUE = 4;
+  TIMESTAMP_QUALITY_SOURCE_CLOCK_MAPPED = 5;
+  TIMESTAMP_QUALITY_EDGE_RECEIVE_FALLBACK = 6;
+  TIMESTAMP_QUALITY_INVALID = 255;
+}
+
+enum InterpolationMethod {
+  INTERPOLATION_METHOD_UNSPECIFIED = 0;
+  INTERPOLATION_METHOD_LINEAR = 1;
+  INTERPOLATION_METHOD_ZERO_ORDER_HOLD = 2;
+  INTERPOLATION_METHOD_NEAREST = 3;
+  INTERPOLATION_METHOD_NONE = 4;
+}
+
+enum ActionSourceQuality {
+  ACTION_SOURCE_QUALITY_UNSPECIFIED = 0;
+  ACTION_SOURCE_QUALITY_CONTROLLER_EFFECTIVE_TARGET = 1;
+  ACTION_SOURCE_QUALITY_APPLIED_FEEDBACK = 2;
+  ACTION_SOURCE_QUALITY_ACCEPTED_COMMAND = 3;
+  ACTION_SOURCE_QUALITY_LAST_SENT_COMMAND = 4;
+  ACTION_SOURCE_QUALITY_UNAVAILABLE = 255;
+}
+
+enum FrameValidityFlag {
+  FRAME_VALIDITY_FLAG_UNSPECIFIED = 0;
+  FRAME_VALIDITY_FLAG_OBSERVATION_VALID = 1;
+  FRAME_VALIDITY_FLAG_ACTION_VALID = 2;
+  FRAME_VALIDITY_FLAG_REQUIRED_DEVICES_PRESENT = 3;
+  FRAME_VALIDITY_FLAG_CLOCK_MAPPING_VALID = 4;
+  FRAME_VALIDITY_FLAG_INTERPOLATION_VALID = 5;
+  FRAME_VALIDITY_FLAG_SCHEMA_MATCHED = 6;
+  FRAME_VALIDITY_FLAG_CONTEXT_CRC_VALID = 7;
+}
+
+message DeviceFrameQualityV1 {
+  string device_id = 1;
+  TimestampQuality timestamp_quality = 2;
+  fixed64 previous_sample_time_edge_ns = 3;
+  fixed64 next_sample_time_edge_ns = 4;
+  fixed64 max_feature_gap_ns = 5;
+  float interpolation_alpha = 6;
+  fixed64 clock_model_revision = 7;
+  sint64 clock_residual_ns = 8;
+  bool valid = 9;
+  string invalid_reason = 10;
+  ActionSourceQuality action_source_quality = 11;
+}
+
+message AnchorFrameContextV1 {
+  uint32 schema_version = 1;
+  bytes session_id = 2;                 // Exactly 16-byte UUID.
+  fixed64 anchor_frame_seq = 3;
+  fixed64 manifest_revision = 4;
+  fixed64 observation_schema_id = 5;
+  fixed64 action_schema_id = 6;
+
+  // Deterministic flattened vectors described by SessionManifestV1.
+  repeated float observation_state = 10 [packed = true];
+  repeated float action = 11 [packed = true];
+  repeated float auxiliary = 12 [packed = true];
+
+  // Bit i corresponds to SessionManifestV1.feature_slices[i].
+  bytes feature_validity_bitmap = 13;
+
+  ActionSourceQuality action_source_quality = 20;
+  repeated DeviceFrameQualityV1 device_quality = 21;
+  repeated FrameValidityFlag validity_flags = 22;
+  string invalid_reason = 23;
+}
+
+// ANCHOR_CONTEXT_UUID_V1 carries this packet. CRC32C is calculated over the
+// exact serialized_context bytes as transmitted. The Receiver verifies CRC
+// before decoding AnchorFrameContextV1, avoiding protobuf reserialization
+// ambiguity.
+message AnchorFrameContextPacketV1 {
+  uint32 schema_version = 1;
+  bytes serialized_context = 2;
+  uint32 payload_crc32c = 3;
+}
+
+enum DeviceKind {
+  DEVICE_KIND_UNSPECIFIED = 0;
+  DEVICE_KIND_ROBOT = 1;
+  DEVICE_KIND_ARM = 2;
+  DEVICE_KIND_MOBILE_BASE = 3;
+  DEVICE_KIND_GRIPPER = 4;
+  DEVICE_KIND_TOOL = 5;
+  DEVICE_KIND_SENSOR = 6;
+  DEVICE_KIND_CUSTOM = 255;
+}
+
+enum FeatureDataType {
+  FEATURE_DATA_TYPE_UNSPECIFIED = 0;
+  // V1 flattened wire vectors are always float32. Other source types MUST be
+  // normalized by the Adapter/Core before encoding.
+  FEATURE_DATA_TYPE_FLOAT32 = 1;
+}
+
+enum FeatureVectorKind {
+  FEATURE_VECTOR_KIND_UNSPECIFIED = 0;
+  FEATURE_VECTOR_KIND_OBSERVATION = 1;
+  FEATURE_VECTOR_KIND_ACTION = 2;
+  FEATURE_VECTOR_KIND_AUXILIARY = 3;
+}
+
+enum CameraRoleV1 {
+  CAMERA_ROLE_V1_UNSPECIFIED = 0;
+  CAMERA_ROLE_V1_ANCHOR = 1;
+  CAMERA_ROLE_V1_SECONDARY = 2;
+}
+
+enum VideoCodecV1 {
+  VIDEO_CODEC_V1_UNSPECIFIED = 0;
+  VIDEO_CODEC_V1_H264 = 1;
+  VIDEO_CODEC_V1_H265 = 2;
+}
+
+enum ManifestCompressionV1 {
+  MANIFEST_COMPRESSION_V1_UNSPECIFIED = 0;
+  MANIFEST_COMPRESSION_V1_NONE = 1;
+  MANIFEST_COMPRESSION_V1_ZSTD = 2;
+}
+
+message FeatureSliceV1 {
+  fixed64 feature_id = 1;
+  string qualified_name = 2;
+  string semantic = 3;
+  string source_device_id = 4;
+  FeatureVectorKind vector_kind = 5;
+  FeatureDataType data_type = 6;
+  string unit = 7;
+  repeated uint32 shape = 8;
+  uint32 offset = 9;
+  uint32 length = 10;
+  InterpolationMethod interpolation = 11;
+  bool required = 12;
+}
+
+message DeviceDescriptorV1 {
+  string adapter_instance_id = 1;
+  string device_id = 2;
+  DeviceKind device_kind = 3;
+  string role = 4;
+  string vendor = 5;
+  string model = 6;
+  string adapter_version = 7;
+  string sdk_version = 8;
+  string source_clock_id = 9;
+  bool required = 10;
+}
+
+message CameraDescriptorV1 {
+  fixed64 camera_id_hash = 1;
+  string stable_camera_id = 2;
+  string product_name = 3;
+  string serial = 4;
+  string physical_device = 5;
+  string virtual_device = 6;
+  uint32 stream_slot = 7;
+  uint32 stream_epoch = 8;
+  uint32 width = 9;
+  uint32 height = 10;
+  uint32 fps_num = 11;
+  uint32 fps_den = 12;
+  string pixel_format = 13;
+  bool stream_excluded = 14;
+  bool required_for_dataset = 15;
+
+  CameraRoleV1 role = 16;
+  VideoCodecV1 video_codec = 17;
+  string transport = 18;               // "srt-mpegts" for the MVP.
+  uint32 transport_port = 19;
+  string stream_id_schema = 20;         // "rmc1" for this version.
+  TimestampQuality timestamp_quality = 21;
+  fixed64 expected_timestamp_accuracy_ns = 22;
+  sint64 calibrated_capture_offset_ns = 23;
+  fixed64 timestamp_calibration_revision = 24;
+  string timestamp_source = 25;          // e.g. V4L2 buffer, hardware exposure.
+  string timestamp_event = 26;           // e.g. exposure_midpoint, dequeue.
+  string source_clock_id = 27;
+}
+
+message SessionManifestV1 {
+  uint32 schema_version = 1;
+  bytes session_id = 2;                 // Exactly 16-byte UUID.
+  string embodiment_id = 3;
+  string edge_core_version = 4;
+  string clock_domain_id = 5;
+  fixed64 session_epoch_edge_ns = 6;
+  fixed64 manifest_revision = 7;
+  fixed64 camera_catalog_revision = 8;
+  string anchor_camera_id = 9;
+
+  fixed64 observation_schema_id = 10;
+  fixed64 action_schema_id = 11;
+  uint32 observation_vector_length = 12;
+  uint32 action_vector_length = 13;
+  uint32 auxiliary_vector_length = 14;
+
+  bytes edge_boot_id = 15;              // Exactly 16-byte UUID.
+  string edge_instance_id = 16;
+  string stream_id_schema = 17;         // "rmc1".
+  reserved 18;                           // Do not add self-referential manifest hashes.
+  string schema_id_algorithm = 19;       // protocol constant, not free-form per session.
+
+  repeated DeviceDescriptorV1 devices = 20;
+  repeated FeatureSliceV1 feature_slices = 21;
+  repeated CameraDescriptorV1 cameras = 30;
+}
+
+// SESSION_MANIFEST_UUID_V1 carries this bounded envelope. Receiver reassembles
+// all chunks for one session/revision, optionally decompresses them, verifies
+// full_payload_crc32c over the uncompressed exact bytes, then decodes
+// SessionManifestV1.
+message SessionManifestChunkV1 {
+  uint32 schema_version = 1;
+  bytes session_id = 2;                 // Exactly 16-byte UUID.
+  fixed64 manifest_revision = 3;
+  uint32 chunk_index = 4;               // Zero-based.
+  uint32 chunk_count = 5;
+  ManifestCompressionV1 compression = 6;
+  uint32 uncompressed_size = 7;
+  uint32 full_payload_crc32c = 8;
+  bytes chunk_payload = 9;
+}

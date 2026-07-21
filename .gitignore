@@ -1,0 +1,13 @@
+.env.edge
+.env.receiver
+.env.dataset-builder
+.env.adapter-*
+config/embodiment.yaml
+config/camera-policy.yaml
+secrets/*
+!secrets/.gitignore
+!secrets/README.md
+__pycache__/
+*.pyc
+*.zip
+SHA256SUMS

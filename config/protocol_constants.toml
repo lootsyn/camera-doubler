@@ -1,0 +1,23 @@
+protocol_version = "robot.multicam.v2.1"
+srt_stream_id_schema = "rmc1"
+
+# RFC 4122/network byte order. In H.264/H.265 user_data_unregistered SEI these
+# 16 bytes precede the protobuf payload.
+sync_timestamp_uuid = "4a1191e6-9578-53b3-92a7-04c049fe0d5b"
+anchor_context_uuid = "62ef08bb-2eb4-59fb-b83f-f8f874a80043"
+session_manifest_uuid = "791a8fc5-d0c3-5abf-81da-abf7f0373194"
+
+crc = "CRC32C-Castagnoli"
+stream_id_hmac = "HMAC-SHA256-truncated-128-base64url-no-padding"
+max_stream_id_bytes = 256
+max_anchor_context_packet_bytes = 8192
+anchor_context_budget_bytes = 2048
+max_manifest_chunk_bytes = 8192
+max_manifest_total_bytes = 262144
+
+# Canonical schema/vector layout identity.
+schema_id_hash = "RFC8785-JCS+SHA-256-first-64-bits-big-endian"
+feature_validity_bit_order = "lsb0"
+recommended_gstreamer = "1.24"
+minimum_gstreamer_with_custom_codec = "1.22"
+manifest_max_compression_ratio = 16

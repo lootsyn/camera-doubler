@@ -1,0 +1,8 @@
+{
+  "schema": "rmc1",
+  "hmac_key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+  "canonical_unsigned": "rmc1;emb=robot-cell-001;edge=edge-robot-cell-001;boot=123e4567-e89b-12d3-a456-426614174001;sid=123e4567-e89b-12d3-a456-426614174002;cid=cam_front_001;slot=0;epoch=1;role=anchor;codec=h264",
+  "signature_base64url_no_padding": "49Rh3qjMcdonlHpdKihB9A",
+  "canonical_signed": "rmc1;emb=robot-cell-001;edge=edge-robot-cell-001;boot=123e4567-e89b-12d3-a456-426614174001;sid=123e4567-e89b-12d3-a456-426614174002;cid=cam_front_001;slot=0;epoch=1;role=anchor;codec=h264;sig=49Rh3qjMcdonlHpdKihB9A",
+  "expected_length_bytes": 214
+}

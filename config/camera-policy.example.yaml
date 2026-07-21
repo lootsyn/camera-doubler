@@ -1,0 +1,42 @@
+schema_version: 1
+
+# Environment variables override these values.
+anchor_selector: serial:FRONT_CAM_001
+anchor_missing_policy: degraded
+
+stream_exclude:
+  - serial:EXAMPLE_SKIP
+  - name_regex:^Integrated Camera$
+
+disable: []
+
+required_for_dataset:
+  - serial:FRONT_CAM_001
+  - name_regex:.*Wrist.*
+
+optional_for_dataset:
+  - name_regex:.*Rear.*
+
+# Stable camera-specific overrides. Keys are supported selectors.
+overrides:
+  serial:FRONT_CAM_001:
+    width: 1280
+    height: 720
+    fps: 30
+    codec: h264
+    bitrate_kbps: 5000
+  name_regex:.*Wrist.*:
+    width: 1280
+    height: 720
+    fps: 30
+    codec: h264
+    bitrate_kbps: 3500
+
+policies:
+  stable_camera_id_collision: fail
+  slot_reclaim: manual
+  slot_tombstone_days: 30
+  strict_profile: true
+  allow_frame_duplication: false
+  hotplug: true
+  encoder_admission_failure: keep_virtual_disable_stream

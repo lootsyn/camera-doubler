@@ -1,0 +1,85 @@
+name: robot-multicam-edge
+
+services:
+  edge-core:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.edge-core
+    image: robot-multicam-edge-core:local
+    env_file:
+      - .env.edge
+    network_mode: host
+    privileged: true # Reference only; minimize devices/capabilities in production.
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 15s
+    cap_add:
+      - SYS_NICE
+    volumes:
+      - /dev:/dev
+      - /run/udev:/run/udev:ro
+      - /sys:/sys:ro
+      - edge-state:/var/lib/robot-edge
+      - adapter-sockets:/run/robot-adapters
+      - ./config:/etc/robot-edge:ro
+    secrets:
+      - srt_passphrase
+      - srt_streamid_hmac_key
+      - edge_control_server_cert
+      - edge_control_server_key
+      - edge_control_ca
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/robot-edge-core", "healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 20s
+    logging:
+      driver: local
+      options:
+        max-size: 20m
+        max-file: "5"
+
+  adapter-rby1:
+    profiles: ["rby1"]
+    build:
+      context: .
+      dockerfile: adapters/rby1/docker/Dockerfile
+    image: robot-adapter-rby1:local
+    env_file:
+      - .env.adapter-rby1
+    network_mode: host
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 10s
+    volumes:
+      - adapter-sockets:/run/robot-adapters
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/adapter-rby1", "healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 20s
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  # Add other robot, gripper, base, or tool adapters as independent services.
+
+volumes:
+  edge-state:
+  adapter-sockets:
+
+secrets:
+  srt_passphrase:
+    file: ./secrets/srt_passphrase.txt
+  srt_streamid_hmac_key:
+    file: ./secrets/srt_streamid_hmac_key.bin
+  edge_control_server_cert:
+    file: ./secrets/edge_control_server.crt
+  edge_control_server_key:
+    file: ./secrets/edge_control_server.key
+  edge_control_ca:
+    file: ./secrets/edge_control_ca.pem

@@ -1,0 +1,31 @@
+# Reference multi-stage image for source generated from this specification.
+ARG RUST_IMAGE=rust:1.85-bookworm
+FROM ${RUST_IMAGE} AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      pkg-config clang cmake protobuf-compiler \
+      libssl-dev libudev-dev libv4l-dev \
+      libgstreamer1.0-dev \
+      libgstreamer-plugins-base1.0-dev \
+      libgstreamer-plugins-bad1.0-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY . .
+RUN cargo build --locked --release -p edge-core
+
+FROM debian:bookworm-slim AS runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates v4l-utils libudev1 libv4l-0 libssl3 \
+      gstreamer1.0-tools \
+      gstreamer1.0-plugins-base \
+      gstreamer1.0-plugins-good \
+      gstreamer1.0-plugins-bad \
+      gstreamer1.0-plugins-ugly \
+      gstreamer1.0-libav \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /src/target/release/robot-edge-core /usr/local/bin/robot-edge-core
+USER root
+ENTRYPOINT ["/usr/local/bin/robot-edge-core"]
+CMD ["serve"]

@@ -1,0 +1,182 @@
+{
+  "review_date": "2026-07-21",
+  "artifact": "robot_multicamera_backend_spec_v2_1",
+  "overall": "PASS",
+  "scope_note": "Static specification/package review. Runtime build, codec round-trip, hardware, robot, and LeRobot loader integration remain implementation gates.",
+  "passes": [
+    {
+      "pass": 1,
+      "name": "architecture-and-requirements",
+      "status": "PASS",
+      "checks": [
+        {
+          "check": "vendor adapters separated",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "all logical cameras and per-camera virtual/stream path",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "exclude/disable/anchor environment contracts",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "authoritative receiver anchor bootstrap",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "all anchor information exposed",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "Docker/Compose scaffolding present",
+          "status": "PASS",
+          "detail": ""
+        }
+      ]
+    },
+    {
+      "pass": 2,
+      "name": "protocol-time-and-integrity",
+      "status": "PASS",
+      "checks": [
+        {
+          "check": "three unique fixed SEI UUIDs",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "canonical stream-id HMAC vector",
+          "status": "PASS",
+          "detail": "49Rh3qjMcdonlHpdKihB9A"
+        },
+        {
+          "check": "schema/bitmap canonical constants",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "timestamp-only secondary wire message",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "exact context CRC envelope",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "bounded manifest chunk envelope",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "generic edge timebase, not RB-Y1 timebase",
+          "status": "PASS",
+          "detail": ""
+        }
+      ]
+    },
+    {
+      "pass": 3,
+      "name": "performance-failure-security-export",
+      "status": "PASS",
+      "checks": [
+        {
+          "check": "anchor-only semantic metadata",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "bounded anchor/manifest resources",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "no silent image synthesis/reuse",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "camera identity collision and slot reuse fail closed",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "SRT key length explicitly enabled",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "dataset export pinned and transactional",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "receiver independent of dataset-builder",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "raw stream replay integrity",
+          "status": "PASS",
+          "detail": ""
+        }
+      ]
+    },
+    {
+      "pass": 4,
+      "name": "build-deployment-package",
+      "status": "PASS",
+      "checks": [
+        {
+          "check": "YAML parsed",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "TOML parsed",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "all Compose Dockerfile references exist",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "all shell scripts pass bash -n",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "package validator passed",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "no local env files packaged",
+          "status": "PASS",
+          "detail": ""
+        },
+        {
+          "check": "no generated secrets packaged",
+          "status": "PASS",
+          "detail": ""
+        }
+      ]
+    }
+  ],
+  "unavailable_runtime_tools": {
+    "docker": true,
+    "protoc": true,
+    "gst-launch-1.0": true,
+    "shellcheck": true
+  }
+}

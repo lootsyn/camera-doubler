@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package robot.backend.v1;
+
+service ControlGateway {
+  rpc AcquireLease(AcquireLeaseRequest) returns (AcquireLeaseResponse);
+  rpc ReleaseLease(ReleaseLeaseRequest) returns (ReleaseLeaseResponse);
+  rpc CommandStream(stream TimelineCommand) returns (stream TimelineFeedback);
+  rpc GetManifest(GetManifestRequest) returns (GetManifestResponse);
+}
+
+message AcquireLeaseRequest {
+  string client_id = 1;
+  repeated string device_ids = 2;
+  uint32 ttl_ms = 3;
+}
+
+message AcquireLeaseResponse {
+  bool granted = 1;
+  bytes lease_id = 2;                    // UUID
+  fixed64 expires_at_edge_ns = 3;
+  string reason = 4;
+}
+
+message ReleaseLeaseRequest {
+  bytes lease_id = 1;
+}
+
+message ReleaseLeaseResponse {
+  bool released = 1;
+}
+
+message TimelineCommand {
+  bytes command_id = 1;                  // UUID
+  bytes lease_id = 2;
+  string device_id = 3;
+  string command_mode = 4;
+  fixed64 action_schema_id = 5;
+  repeated float values = 6 [packed = true];
+  fixed64 client_time_ns = 7;            // Diagnostic only, not execution time
+}
+
+enum TimelineFeedbackStatus {
+  TIMELINE_FEEDBACK_STATUS_UNSPECIFIED = 0;
+  TIMELINE_FEEDBACK_STATUS_ROUTED = 1;
+  TIMELINE_FEEDBACK_STATUS_ACCEPTED = 2;
+  TIMELINE_FEEDBACK_STATUS_ACTIVE = 3;
+  TIMELINE_FEEDBACK_STATUS_COMPLETED = 4;
+  TIMELINE_FEEDBACK_STATUS_REJECTED = 5;
+  TIMELINE_FEEDBACK_STATUS_FAILED = 6;
+}
+
+message TimelineFeedback {
+  bytes command_id = 1;
+  string device_id = 2;
+  TimelineFeedbackStatus status = 3;
+  fixed64 observed_edge_ns = 4;
+  repeated float effective_values = 5 [packed = true];
+  string reason = 6;
+}
+
+message GetManifestRequest {}
+
+message GetManifestResponse {
+  bytes serialized_session_manifest = 1;
+}

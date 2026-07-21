@@ -1,0 +1,161 @@
+syntax = "proto3";
+
+package robot.adapter.v1;
+
+import "google/protobuf/empty.proto";
+
+service HardwareAdapter {
+  rpc GetDescriptor(google.protobuf.Empty) returns (AdapterDescriptor);
+  rpc StreamSamples(StreamSamplesRequest) returns (stream DeviceSample);
+  rpc CommandStream(stream CommandEnvelope) returns (stream CommandFeedback);
+  rpc ProbeClock(ClockProbeRequest) returns (ClockProbeResponse);
+  rpc GetHealth(google.protobuf.Empty) returns (HealthResponse);
+}
+
+enum SourceClockKind {
+  SOURCE_CLOCK_KIND_UNSPECIFIED = 0;
+  SOURCE_CLOCK_KIND_EDGE_MONOTONIC = 1;
+  SOURCE_CLOCK_KIND_SOURCE_MONOTONIC = 2;
+  SOURCE_CLOCK_KIND_TAI_UTC = 3;
+  SOURCE_CLOCK_KIND_UNSTAMPED = 4;
+}
+
+enum DeviceKind {
+  DEVICE_KIND_UNSPECIFIED = 0;
+  DEVICE_KIND_ROBOT = 1;
+  DEVICE_KIND_ARM = 2;
+  DEVICE_KIND_MOBILE_BASE = 3;
+  DEVICE_KIND_GRIPPER = 4;
+  DEVICE_KIND_TOOL = 5;
+  DEVICE_KIND_SENSOR = 6;
+  DEVICE_KIND_CUSTOM = 255;
+}
+
+enum InterpolationMethod {
+  INTERPOLATION_METHOD_UNSPECIFIED = 0;
+  INTERPOLATION_METHOD_LINEAR = 1;
+  INTERPOLATION_METHOD_ZERO_ORDER_HOLD = 2;
+  INTERPOLATION_METHOD_NEAREST = 3;
+  INTERPOLATION_METHOD_NONE = 4;
+}
+
+enum FeatureRole {
+  FEATURE_ROLE_UNSPECIFIED = 0;
+  FEATURE_ROLE_STATE = 1;
+  FEATURE_ROLE_EFFECTIVE_ACTION = 2;
+  FEATURE_ROLE_COMMAND = 3;
+  FEATURE_ROLE_AUXILIARY = 4;
+}
+
+message FeatureDescriptor {
+  fixed64 feature_id = 1;
+  string qualified_name = 2;
+  string semantic = 3;
+  FeatureRole role = 4;
+  string unit = 5;
+  repeated uint32 shape = 6;
+  InterpolationMethod interpolation = 7;
+  bool required = 8;
+}
+
+message SourceClockDescriptor {
+  string source_clock_id = 1;
+  SourceClockKind kind = 2;
+  string description = 3;
+  bool supports_probe = 4;
+}
+
+message DeviceDescriptor {
+  string device_id = 1;
+  DeviceKind kind = 2;
+  string role = 3;
+  string vendor = 4;
+  string model = 5;
+  bool required = 6;
+  repeated FeatureDescriptor features = 7;
+  repeated string command_modes = 8;
+}
+
+message AdapterDescriptor {
+  uint32 api_version = 1;
+  string adapter_instance_id = 2;
+  string adapter_name = 3;
+  string adapter_version = 4;
+  string vendor_sdk_version = 5;
+  SourceClockDescriptor source_clock = 6;
+  repeated DeviceDescriptor devices = 7;
+  fixed64 descriptor_revision = 8;
+}
+
+message StreamSamplesRequest {
+  repeated string device_ids = 1;
+  uint32 requested_rate_hz = 2;
+}
+
+message FeatureBlock {
+  fixed64 feature_id = 1;
+  repeated float values = 2 [packed = true];
+  bool valid = 3;
+  string invalid_reason = 4;
+  // Optional per-feature normalized source timestamp. Zero means use the
+  // DeviceSample source_time_ns.
+  fixed64 source_time_ns = 5;
+}
+
+message DeviceSample {
+  string adapter_instance_id = 1;
+  string device_id = 2;
+  fixed64 sample_seq = 3;
+  string source_clock_id = 4;
+  fixed64 source_time_ns = 5;
+  repeated FeatureBlock feature_blocks = 6;
+  fixed64 descriptor_revision = 7;
+}
+
+message CommandEnvelope {
+  bytes command_id = 1;                 // UUID
+  bytes lease_id = 2;                   // UUID
+  string device_id = 3;
+  string command_mode = 4;
+  fixed64 action_schema_id = 5;
+  repeated float values = 6 [packed = true];
+  fixed64 client_time_ns = 7;           // Diagnostic only
+}
+
+enum CommandStatus {
+  COMMAND_STATUS_UNSPECIFIED = 0;
+  COMMAND_STATUS_RECEIVED = 1;
+  COMMAND_STATUS_VALIDATED = 2;
+  COMMAND_STATUS_ACCEPTED = 3;
+  COMMAND_STATUS_ACTIVE = 4;
+  COMMAND_STATUS_COMPLETED = 5;
+  COMMAND_STATUS_REJECTED = 6;
+  COMMAND_STATUS_FAILED = 7;
+}
+
+message CommandFeedback {
+  bytes command_id = 1;
+  string device_id = 2;
+  CommandStatus status = 3;
+  fixed64 source_time_ns = 4;
+  string source_clock_id = 5;
+  repeated float effective_values = 6 [packed = true];
+  string reason = 7;
+}
+
+message ClockProbeRequest {
+  fixed64 nonce = 1;
+}
+
+message ClockProbeResponse {
+  fixed64 nonce = 1;
+  string source_clock_id = 2;
+  fixed64 source_time_ns = 3;
+}
+
+message HealthResponse {
+  bool live = 1;
+  bool ready = 2;
+  string status = 3;
+  repeated string warnings = 4;
+}

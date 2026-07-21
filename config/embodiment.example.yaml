@@ -1,0 +1,45 @@
+schema_version: 1
+embodiment_id: robot-cell-001
+
+adapters:
+  - adapter_instance_id: rby1-main
+    endpoint: unix:///run/robot-adapters/rby1.sock
+    required: true
+  # Add a separate gripper adapter without changing Edge Core:
+  # - adapter_instance_id: right-gripper
+  #   endpoint: unix:///run/robot-adapters/right-gripper.sock
+  #   required: true
+
+devices:
+  - device_id: body
+    adapter_instance_id: rby1-main
+    role: main_robot
+    required: true
+  # Example external component:
+  # - device_id: right_gripper
+  #   adapter_instance_id: right-gripper
+  #   role: right_gripper
+  #   required: true
+
+vector_layout:
+  observation:
+    # Exact feature names are validated against Adapter descriptors at startup.
+    - feature: body.joint.position
+      required: true
+    - feature: body.joint.velocity
+      required: false
+    # - feature: right_gripper.position
+    #   required: true
+  action:
+    - feature: body.joint.effective_target_position
+      required: true
+    # - feature: right_gripper.effective_target_position
+    #   required: true
+  auxiliary:
+    - feature: body.control_status
+      required: false
+
+policies:
+  required_adapter_disconnect: invalidate_anchor_context
+  schema_change: start_new_session
+  unavailable_action: drop_dataset_step
