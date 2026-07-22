@@ -1,0 +1,35 @@
+ARG RUST_IMAGE=rust:1.85-bookworm@sha256:e51d0265072d2d9d5d320f6a44dde6b9ef13653b035098febd68cce8fa7c0bc4
+FROM ${RUST_IMAGE} AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      pkg-config clang cmake protobuf-compiler libssl-dev \
+      libgstreamer1.0-dev \
+      libgstreamer-plugins-base1.0-dev \
+      libgstreamer-plugins-bad1.0-dev \
+    && rm -rf /var/lib/apt/lists/*
+RUN rustup component add clippy rustfmt
+
+WORKDIR /src
+COPY Cargo.toml Cargo.lock rust-toolchain.toml ./
+COPY crates/ ./crates/
+COPY config/ ./config/
+COPY proto/ ./proto/
+COPY testdata/ ./testdata/
+RUN cargo clippy --locked -p web-relay --all-targets --all-features -- -D warnings \
+    && cargo build --locked --release -p web-relay
+
+FROM debian:bookworm-slim@sha256:7b140f374b289a7c2befc338f42ebe6441b7ea838a042bbd5acbfca6ec875818 AS runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates libssl3 \
+      gstreamer1.0-tools \
+      gstreamer1.0-plugins-base \
+      gstreamer1.0-plugins-good \
+      gstreamer1.0-plugins-bad \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /src/target/release/robot-multicam-web-relay /usr/local/bin/robot-multicam-web-relay
+RUN groupadd --gid 10002 relay \
+    && useradd --uid 10002 --gid relay --no-create-home --shell /usr/sbin/nologin relay
+USER 10002:10002
+ENTRYPOINT ["/usr/local/bin/robot-multicam-web-relay"]
+CMD ["serve"]

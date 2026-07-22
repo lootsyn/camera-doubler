@@ -29,6 +29,7 @@ excluded_env = {
     ".env.edge",
     ".env.receiver",
     ".env.dataset-builder",
+    ".env.web-relay",
     ".env.adapter-rby1",
 }
 

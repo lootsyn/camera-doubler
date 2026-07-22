@@ -10,5 +10,6 @@ copy_if_missing .env.edge.example .env.edge
 copy_if_missing .env.receiver.example .env.receiver
 copy_if_missing .env.dataset-builder.example .env.dataset-builder
 copy_if_missing .env.adapter-rby1.example .env.adapter-rby1
+copy_if_missing .env.web-relay.example .env.web-relay
 copy_if_missing config/camera-policy.example.yaml config/camera-policy.yaml
 copy_if_missing config/embodiment.example.yaml config/embodiment.yaml

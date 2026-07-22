@@ -6,6 +6,7 @@
 - [ ] CA private key는 Edge/Receiver에 배포하지 않는다.
 - [ ] SRT passphrase/HMAC key는 Edge/Receiver에서 동일하고 file mount만 사용한다.
 - [ ] gRPC 8083과 metrics 9090/9091은 VPN/사설망/source firewall 뒤에 있다.
+- [ ] Web Relay를 쓰면 TCP 8091, CORS, HLS의 in-band SEI 노출 경계를 검토했다.
 - [ ] SRT UDP port range는 지정 Edge IP만 허용한다.
 - [ ] 실제 env/config/secret/runtime가 `git check-ignore`에 잡힌다.
 - [ ] container가 non-root, read-only, cap-drop, no-new-privileges로 실행된다.
@@ -34,6 +35,8 @@
 - [ ] 모든 camera의 signed stream ID/port/epoch와 authoritative manifest를 확인했다.
 - [ ] external metadata client로 catalog/anchor/quality/step을 조회했다.
 - [ ] H.264 AU를 재생하고 frame skew/metadata vector를 같은 step에서 확인했다.
+- [ ] Relay 사용 시 VLC/hls.js HLS와 SSE history/live metadata를 같은 PTS/epoch/ordinal로 확인했다.
+- [ ] Relay-off/on CPU/RSS/network, viewer 수, HLS tmpfs/history 상한을 실제 bitrate로 측정했다.
 - [ ] irregular cadence가 30 Hz로 조용히 오표기되지 않는다.
 - [ ] temp/finalize/full load scan/checksum/provenance/atomic commit을 통과했다.
 - [ ] raw envelope/index/hash replay가 deterministic step hash를 재현한다.
@@ -57,7 +60,9 @@ python3 scripts/verify-vendor-boundary.py
 ./scripts/run-synthetic-roundtrip.sh
 ./scripts/run-srt-reconnect-test.sh
 METADATA_CLIENT_PYTHON="$PWD/.venv-tools/bin/python" ./scripts/run-metadata-client-test.sh
+METADATA_CLIENT_PYTHON="$PWD/.venv-tools/bin/python" ./scripts/run-web-relay-test.sh
 docker compose -f compose.receiver.yaml config -q
+docker compose --profile web -f compose.receiver.yaml config -q
 docker compose --profile rby1 -f compose.edge.yaml config -q
 ```
 

@@ -1,8 +1,10 @@
 .env.edge
 .env.receiver
 .env.dataset-builder
+.env.web-relay
 .env.adapter-*
 !.env.adapter-*.example
+!.env.web-relay.example
 config/embodiment.yaml
 config/camera-policy.yaml
 secrets/*

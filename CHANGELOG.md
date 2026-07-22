@@ -26,6 +26,9 @@
 - Receiver gRPC synchronized H.264/metadata client와 session/camera acceptance 운영 로그 추가
 - 다른 로봇용 Adapter를 AI agent가 구현할 수 있는 wire/clock/feature/command/Docker/test 계약 가이드 추가
 - VLC URL endpoint 지원 여부와 ingest/output 구분, 사내망 평문 접속, frame/AU별 metadata 및 manifest feature slice 추출 절차 명확화
+- Receiver native gRPC와 동시에 사용할 수 있는 별도 non-root Web Relay container 및 `ListSessions` discovery 추가
+- H.264 decode/encode 없는 HLS pass-through/remux, stream catalog, bounded-history frame metadata SSE 추가
+- VLC/hls.js URL 재생, PTS/epoch/ordinal overlay correlation, 1/4/16 camera 성능·용량 분석과 통합검증 추가
 
 ## 2.0
 

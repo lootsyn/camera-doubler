@@ -98,6 +98,47 @@ services:
         max-size: 20m
         max-file: "5"
 
+  web-relay:
+    profiles: ["web"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web-relay
+    image: robot-multicam-web-relay:local
+    env_file:
+      - path: .env.web-relay
+        required: false
+    init: true
+    user: "10002:10002"
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+      - /var/cache/robot-relay:size=512m,uid=10002,gid=10002,mode=0770
+    restart: unless-stopped
+    cpus: "2.0"
+    mem_limit: 1g
+    pids_limit: 256
+    stop_grace_period: 10s
+    ports:
+      - "8091:8091/tcp"
+    depends_on:
+      receiver:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/robot-multicam-web-relay", "healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      driver: local
+      options:
+        max-size: 20m
+        max-file: "5"
+
 volumes:
   receiver-data:
 

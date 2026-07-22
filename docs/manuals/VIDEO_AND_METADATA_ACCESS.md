@@ -1,333 +1,279 @@
 # 외부 영상 및 프레임 메타데이터 접근
 
-이 문서는 Receiver와 client가 같은 사내망에 있고 TCP 8083에 직접 접근할 수 있다고 가정한다. 현재 기본 경로는 TLS와 사용자 인증이 없는 평문 gRPC다. VPN, SSH tunnel 같은 보호 연결은 마지막 절의 선택 사항으로 설명한다.
+이 문서의 기본 배포는 Receiver와 client가 같은 신뢰 사내망에 있고, TCP 8083과 8091에 직접 접근하는 구성이다. 두 port 모두 기본값은 TLS와 사용자 인증이 없는 평문이다. 보호 연결은 선택 사항으로 마지막에 설명한다.
 
-## 1. 먼저 보는 결론
+## 1. 결론과 endpoint
 
-| 원하는 작업 | 현재 지원 방법 |
-|---|---|
-| 사내 PC에서 실시간 영상 보기 | 제공 client의 `watch --view-camera CAMERA_ID`로 H.264 AU를 `ffplay`에 전달 |
-| 프레임별 영상과 메타데이터 받기 | `SubscribeSynchronizedSteps(include_encoded_images=true)` gRPC 구독 |
-| 로봇 feature를 이름별로 해석 | manifest의 `feature_slices`로 `observation_state`, `action`, `auxiliary`를 slice |
-| 파일로 저장한 뒤 VLC에서 보기 | `watch --dump-dir`로 `.h264` 저장 후 VLC에서 파일 열기 |
-| VLC에서 `http://`, `rtsp://`, `srt://` URL 직접 열기 | **현재 미지원**. Receiver에 viewer용 media endpoint/relay가 없음 |
-| 원본 in-band 증거 검사 | H.264 SEI 또는 raw archive를 replay verifier로 검증 |
+외부 gRPC 접근과 URL 영상 접근은 동시에 가능하다. Web Relay는 Receiver 뒤의 선택적 consumer이므로 Relay를 켜도 기존 gRPC API, SRT ingest, raw recording, Dataset Builder는 그대로 유지된다.
 
-가장 짧은 실시간 확인은 다음과 같다.
-
-```bash
-RECEIVER_HOST=10.30.0.20
-SESSION_ID=00000000-0000-0000-0000-000000000000
-CAMERA_ID=stable-camera-id
-
-python scripts/receiver-metadata-client.py \
-  --endpoint "${RECEIVER_HOST}:8083" \
-  watch --session "${SESSION_ID}" \
-  --camera "${CAMERA_ID}" --view-camera "${CAMERA_ID}"
+```text
+Edge --SRT/H.264--> Receiver :8083 --한 개의 gRPC 구독--> Web Relay :8091
+                              |                         |-- HLS URL
+                              |                         `-- metadata SSE
+                              `-- 기존 외부 gRPC client
 ```
 
-이 명령은 VLC용 URL을 만드는 것이 아니라 gRPC에서 받은 H.264 Annex-B access unit을 local `ffplay` 표준입력으로 전달한다.
-
-## 2. VLC용 URL이 없는 이유
-
-현재 구현의 port와 역할은 다음과 같다.
-
-| 시도할 수 있는 주소 | 실제 역할 | 재생되지 않는 이유 |
+| 목적 | endpoint | 내용 |
 |---|---|---|
-| `http://RECEIVER:8080/...` | Compose에 남아 있는 reserved TCP port | HTTP/HLS server나 route가 구현되어 있지 않음 |
-| `http://RECEIVER:8083/...` | `ReceiverMetadata` 평문 gRPC/HTTP2 | MPEG-TS/HLS 같은 media resource가 아니라 protobuf-framed RPC임 |
-| `rtsp://RECEIVER:PORT/...` | 없음 | Receiver에 RTSP server, mount point, SDP 생성기가 없음 |
-| `srt://RECEIVER:10000` | camera slot 0의 **입력** listener | Edge sender용 signed stream ID/passphrase를 검증하는 ingest이며 viewer용 fan-out이 아님 |
-| `FrameReference.preview_uri` | API field만 예약 | 현재 runtime이 빈 문자열을 반환함 |
+| session 발견 | `ReceiverMetadata.ListSessions` on TCP 8083 | authoritative/connected session 목록 |
+| 원본 application API | `ReceiverMetadata` on TCP 8083 | 동기화 step, H.264 AU, manifest, quality |
+| stream catalog | `GET http://HOST:8091/api/v1/streams` | camera ID와 실제 HLS/SSE URL |
+| URL 영상 | `GET /live/{session_id}/{camera_key}/index.m3u8` | H.264를 재인코딩하지 않은 MPEG-TS HLS |
+| 웹 메타데이터 | `GET /metadata/{session_id}/{camera_key}` | frame event SSE, bounded history 뒤 live 전환 |
+| Relay 상태 | `/healthz`, `/readyz`, `/metrics` | process, active session/HLS, counter |
 
-VLC가 HTTP stream을 재생하려면 누군가가 HTTP access output과 MPEG-TS 같은 mux를 실제로 publish해야 한다. 현재 Receiver는 이를 만들지 않는다. VLC의 공식 HTTP streaming 예제도 송출 측이 `access=http`, `mux=ts`, `dst`를 제공하는 구조다: [VLC Stream over HTTP](https://docs.videolan.me/vlc-user/desktop/3.0/en/advanced/streaming/stream_over_http.html).
+`camera_key`는 임의 camera ID를 안전한 URL path로 만들기 위한 UTF-8 bytes의 hex 값이다. 직접 계산할 필요 없이 catalog가 반환하는 URL을 사용한다.
 
-SRT player 지원 여부와 무관하게 이 시스템의 UDP 10000~10015는 시청 endpoint가 아니다. 한 camera의 Edge caller를 인증해 Receiver로 수집하는 방향이며, 받은 stream을 다른 client에 재송출하지 않는다. 임의 VLC 연결은 signed `rmc1` stream identity 검증에서 거부되거나 정상 ingest와 충돌할 수 있다.
+## 2. Relay 시작
 
-이 설계의 외부 feed는 CCTV preview가 아니라 **anchor frame 단위 dataset feed**다. Receiver는 manifest와 anchor context를 검증하고, secondary camera에서 허용 skew 이내의 가장 가까운 AU를 선택한 뒤에야 한 `SynchronizedDatasetStep`을 publish한다. required camera 누락, 잘못된 context 또는 subscriber lag가 있으면 독립적인 상시 preview처럼 동작하지 않는다.
+최초 한 번 local env와 개발 secret을 만든다. production에서는 개발 인증서를 교체한다.
 
-### URL 재생 기능을 추가할 때 필요한 별도 구성
+```bash
+./scripts/bootstrap-example-config.sh
+./scripts/generate-dev-secrets.sh
+```
 
-VLC URL이 필수라면 Receiver 뒤에 다음 계약을 가진 relay를 별도 구현해야 한다.
+`.env.web-relay`의 기본값은 Receiver Compose network의 `http://receiver:8083`, host TCP 8091, 1초 HLS target, 6개 playlist segment, 8개 최대 파일, camera별 최근 metadata 512개다. `RELAY_SESSION_ID`가 비어 있으면 Relay가 authoritative이며 연결된 최신 session을 자동 선택한다.
 
-1. `SubscribeSynchronizedSteps(include_encoded_images=true)`를 session/camera별로 구독한다.
-2. IDR/SPS/PPS 이전 client 접속을 처리할 keyframe cache를 둔다.
-3. H.264 AU를 MPEG-TS/HTTP 또는 RTSP로 mux/fan-out한다.
-4. 예: `http://relay:8091/sessions/{session_id}/cameras/{camera_id}.ts` 같은 안정적인 URL을 발급한다.
-5. slow client가 Receiver gRPC subscriber나 ingest를 막지 않도록 bounded queue와 drop policy를 둔다.
-6. 영상 URL과 별도로 아래 gRPC metadata를 유지한다. VLC 화면만으로는 protobuf robot context를 조회할 수 없다.
+Receiver와 선택적 Relay를 함께 시작한다.
 
-이 relay는 현재 repository에 구현되어 있지 않으므로 위 형태의 URL을 운영 endpoint로 가정하면 안 된다.
+```bash
+docker compose --profile web -f compose.receiver.yaml up -d --build --wait
+docker compose --profile web -f compose.receiver.yaml ps
+curl -fsS http://127.0.0.1:8091/healthz
+```
 
-## 3. 사내망 평문 연결 준비
+`healthz`는 Relay process/GStreamer가 살아 있으면 200이다. Edge session과 첫 HLS pipeline까지 준비되어야 `readyz`가 200이다.
 
-Receiver 기본 설정은 `RECEIVER_GRPC_BIND=0.0.0.0:8083`이며 Compose가 TCP 8083을 host에 publish한다. client PC에서 Receiver의 사내 IP로 직접 연결한다.
+```bash
+curl -fsS http://127.0.0.1:8091/readyz
+curl -fsS http://127.0.0.1:8091/metrics | grep '^robot_\|^relay_'
+```
+
+Relay는 secret을 mount하지 않고 non-root/read-only/cap-drop/no-new-privileges로 실행한다. HLS 파일은 512 MiB 제한 tmpfs에만 둔다. Relay 장애는 Receiver health나 ingest를 실패시키지 않는다.
+
+## 3. session과 URL 찾기
+
+외부 gRPC에서 현재 session을 먼저 볼 수 있다.
 
 ```bash
 RECEIVER_HOST=10.30.0.20
-ENDPOINT="${RECEIVER_HOST}:8083"
-nc -vz "${RECEIVER_HOST}" 8083
-```
-
-PowerShell에서는 다음으로 확인한다.
-
-```powershell
-$ReceiverHost = "10.30.0.20"
-$Endpoint = "${ReceiverHost}:8083"
-Test-NetConnection $ReceiverHost -Port 8083
-```
-
-이 기본 연결은 `grpc.insecure_channel()`을 사용한다. 패킷 암호화, server identity 검증, 사용자 인증이 없으므로 신뢰할 수 있는 사내 VLAN과 방화벽 안에서만 사용한다. 외부 인터넷에 그대로 port-forward하지 않는다.
-
-client dependency와 generated protobuf를 준비한다.
-
-```bash
-python3 -m venv .venv-tools
-. .venv-tools/bin/activate
-python -m pip install -r python/metadata_client/requirements.txt
-python scripts/generate-proto.py
-python scripts/receiver-metadata-client.py --help
-```
-
-Windows에서는 activation 없이 `.venv-tools\Scripts\python.exe`를 아래 `python` 대신 사용할 수 있다.
-
-## 4. Session ID와 camera ID 찾기
-
-Edge가 시작할 때 생성한 session UUID는 secret이 아니다. raw signed stream ID 전체나 secret은 출력하지 않는다.
-
-```bash
-docker compose -f compose.edge.yaml logs edge-core \
-  | grep 'Edge session created'
-
-docker compose -f compose.receiver.yaml logs receiver \
-  | grep 'authenticated SRT stream accepted'
-```
-
-찾은 UUID로 catalog, authoritative anchor, manifest, quality를 한 번에 조회한다.
-
-```bash
-SESSION_ID=00000000-0000-0000-0000-000000000000
-
 python scripts/receiver-metadata-client.py \
-  --endpoint "${ENDPOINT}" \
-  snapshot --session "${SESSION_ID}" \
-  > session-snapshot.json
+  --endpoint "${RECEIVER_HOST}:8083" sessions
 ```
+
+URL consumer는 Relay catalog를 사용한다.
 
 ```bash
-jq '.cameras[] | {camera_id, stream_slot, stream_epoch, connected, manifest_validated}' \
-  session-snapshot.json
-jq '.anchor, .quality' session-snapshot.json
-jq '.manifest.feature_slices' session-snapshot.json
+RELAY_ORIGIN=http://10.30.0.20:8091
+curl -fsS "${RELAY_ORIGIN}/api/v1/streams" | jq .
 ```
 
-`manifest_validated=true`이고 anchor의 `authoritative=true`인 session만 canonical metadata source로 사용한다.
+예시 응답은 다음 형태다.
 
-## 5. 현재 지원되는 영상 보기와 저장
+```json
+[
+  {
+    "session_id": "07070707-0707-0707-0707-070707070707",
+    "camera_id": "front-left",
+    "camera_key": "66726f6e742d6c656674",
+    "stream_epoch": 1,
+    "playlist_url": "/live/07070707-0707-0707-0707-070707070707/66726f6e742d6c656674/index.m3u8",
+    "metadata_url": "/metadata/07070707-0707-0707-0707-070707070707/66726f6e742d6c656674",
+    "playlist_ready": true,
+    "last_capture_time_edge_ns": 123456789,
+    "last_media_pts_seconds": 12.3,
+    "last_access_unit_ordinal": 369
+  }
+]
+```
 
-### 5.1 실시간 `ffplay`
+catalog URL은 relative path다. client는 자신이 사용한 `RELAY_ORIGIN`을 앞에 붙인다. session/epoch가 바뀌면 기존 URL을 정상 stream으로 재사용하지 말고 catalog를 다시 읽는다.
 
-client host에 `ffplay`가 있어야 한다.
+## 4. VLC와 URL player
+
+VLC의 `미디어 → 네트워크 스트림 열기`에 catalog의 완전한 playlist URL을 넣는다.
 
 ```bash
-python scripts/receiver-metadata-client.py \
-  --endpoint "${ENDPOINT}" \
-  watch --session "${SESSION_ID}" \
-  --camera stable-camera-id \
-  --view-camera stable-camera-id
+vlc "${RELAY_ORIGIN}/live/${SESSION_ID}/${CAMERA_KEY}/index.m3u8"
 ```
 
-여러 camera는 `--camera`와 `--view-camera`를 반복한다. 각 camera마다 별도 창이 열린다.
+다른 player도 표준 HLS URL을 사용한다.
 
 ```bash
-python scripts/receiver-metadata-client.py \
-  --endpoint "${ENDPOINT}" \
-  watch --session "${SESSION_ID}" \
-  --camera front-left --camera wrist \
-  --view-camera front-left --view-camera wrist
+ffplay -fflags nobuffer \
+  "${RELAY_ORIGIN}/live/${SESSION_ID}/${CAMERA_KEY}/index.m3u8"
 ```
 
-subscriber가 IDR 중간에 시작하면 다음 keyframe/SPS/PPS까지 decoder warning이나 빈 화면이 보일 수 있다.
+첫 playlist는 Relay가 구독한 뒤 IDR 경계에서 segment를 닫아야 나타난다. catalog가 있지만 `playlist_ready=false`라면 다음 keyframe까지 기다린다. HLS는 파일 단위 buffering이 있으므로 gRPC AU/`ffplay` 직접 연결보다 지연이 크다.
 
-### 5.2 H.264 파일 저장 후 VLC 재생
+Relay를 사용하지 않을 때는 URL endpoint가 없다. TCP 8083은 protobuf gRPC이고, UDP 10000~10015는 인증된 Edge 입력 listener이며, TCP 8080은 reserved port다. 이 주소들을 VLC URL로 사용하지 않는다.
 
-```bash
-python scripts/receiver-metadata-client.py \
-  --endpoint "${ENDPOINT}" \
-  watch --session "${SESSION_ID}" \
-  --camera stable-camera-id \
-  --dump-dir ./received-h264 --max-steps 900
+## 5. 별도 웹 프로젝트에서 영상과 metadata 함께 표시
+
+가능하다. 영상은 HLS URL, metadata는 같은 catalog 항목의 SSE URL을 사용한다. Relay는 SSE 접속 시 camera별 최근 bounded history를 먼저 보내고 이어서 live event를 보내므로, HLS playlist에 이미 들어간 과거 frame의 metadata도 web client가 받을 수 있다.
+
+Safari 계열의 native HLS 또는 hls.js를 사용한다. 아래 예시는 npm의 `hls.js`를 사용한다고 가정한다.
+
+```html
+<video id="camera" autoplay muted controls playsinline></video>
+<pre id="metadata"></pre>
 ```
 
-VLC에서 `received-h264/stable-camera-id.h264` 파일을 열거나 다음처럼 실행한다.
+```javascript
+import Hls from "hls.js";
 
-```bash
-vlc ./received-h264/stable-camera-id.h264
-ffplay -f h264 ./received-h264/stable-camera-id.h264
-ffmpeg -f h264 -i ./received-h264/stable-camera-id.h264 -c copy received.mp4
+const relayOrigin = "http://10.30.0.20:8091";
+const catalog = await fetch(`${relayOrigin}/api/v1/streams`).then(r => {
+  if (!r.ok) throw new Error(`catalog HTTP ${r.status}`);
+  return r.json();
+});
+const stream = catalog.find(item => item.camera_id === "front-left");
+if (!stream || !stream.playlist_ready) throw new Error("camera HLS is not ready");
+
+const video = document.querySelector("#camera");
+const playlist = relayOrigin + stream.playlist_url;
+if (video.canPlayType("application/vnd.apple.mpegurl")) {
+  video.src = playlist;
+} else if (Hls.isSupported()) {
+  const hls = new Hls({liveSyncDurationCount: 2});
+  hls.loadSource(playlist);
+  hls.attachMedia(video);
+} else {
+  throw new Error("this browser has no HLS playback path");
+}
+
+// Relay의 default history 512개를 수용하고 오래된 값은 제거한다.
+const metadataByPts = [];
+const events = new EventSource(relayOrigin + stream.metadata_url);
+events.addEventListener("frame", message => {
+  const frame = JSON.parse(message.data);
+  metadataByPts.push(frame);
+  if (metadataByPts.length > 1024) metadataByPts.splice(0, 512);
+});
+
+function renderFrame(_now, rendered) {
+  // GStreamer가 normalized PTS를 MPEG-TS PTS와 SSE의 seconds에 같이 사용한다.
+  const mediaPts = rendered.mediaTime;
+  let nearest = null;
+  let distance = Number.POSITIVE_INFINITY;
+  for (const item of metadataByPts) {
+    const delta = Math.abs(item.media_pts_seconds - mediaPts);
+    if (delta < distance) {
+      nearest = item;
+      distance = delta;
+    }
+  }
+  // 30 fps 기준 0.05초 이내만 같은 displayed frame으로 취급한다.
+  document.querySelector("#metadata").textContent =
+    nearest && distance <= 0.05
+      ? JSON.stringify(nearest, null, 2)
+      : "matching frame metadata is buffering";
+  video.requestVideoFrameCallback(renderFrame);
+}
+video.requestVideoFrameCallback(renderFrame);
 ```
 
-`--dump-dir`은 같은 이름의 파일에 append하므로 새 capture를 시작할 때 별도 빈 directory를 사용한다.
+정확한 correlation key는 다음과 같다.
 
-## 6. 프레임 메타데이터가 만들어지는 과정
+- player overlay: `media_pts_seconds`와 `requestVideoFrameCallback().mediaTime`의 가장 가까운 값
+- audit/application identity: `(session_id, camera_id, stream_epoch, access_unit_ordinal)`
+- multi-camera/robot 결합: `anchor_frame_seq`, `step_capture_time_edge_ns`, `skew_from_anchor_ns`
 
-여기서 frame은 decoder 출력 bitmap이 아니라 하나의 coded-picture H.264 access unit(AU)을 뜻한다.
+JavaScript number에서 큰 nanosecond integer의 정밀도가 줄 수 있으므로 UI 시간 정렬에는 `media_pts_seconds`를 사용한다. exact integer 보존이 필요한 client는 SSE JSON의 ordinal/epoch 또는 gRPC의 fixed64를 사용한다. browser/player가 MSE timestamp offset을 별도로 바꾸는 구성이라면 같은 constant offset을 보정하고 실제 브라우저에서 tolerance를 측정한다.
 
-1. 모든 camera AU에는 `SyncTimestampV1.capture_time_edge_ns`가 exactly one SEI로 들어간다.
-2. anchor camera AU에는 그 frame에 맞춘 `AnchorFrameContextPacketV1`이 추가된다.
-3. packet의 `serialized_context`는 `AnchorFrameContextV1` protobuf이며 `payload_crc32c`로 exact bytes를 검증한다.
-4. anchor에는 session 시작/변경 시 `SessionManifestChunkV1`도 실린다.
-5. Receiver는 decode 전에 SEI를 꺼내 timestamp, CRC, schema/session/manifest revision을 검증한다.
-6. accepted anchor AU마다 secondary camera에서 timestamp가 가장 가까운 AU를 선택한다.
-7. 선택된 camera frame들과 anchor의 robot context를 하나의 `SynchronizedDatasetStep`으로 gRPC publish한다.
+SSE의 첫 이벤트 ID는 `stream_epoch:access_unit_ordinal` 형식이다. slow client가 bounded broadcast를 따라가지 못하면 중간 preview event가 drop되고 `relay_sse_lag_total`이 증가한다. 정확한 모든 frame이 필요한 수집기는 SSE가 아니라 gRPC를 사용한다.
 
-따라서 secondary AU 자체에는 로봇 observation/action이 반복 저장되지 않는다. secondary frame의 `capture_time_edge_ns`와 `skew_from_anchor_ns`로 같은 step의 anchor robot context에 결합한다.
+## 6. SSE frame metadata 상세
 
-## 7. CLI로 frame별 metadata 꺼내기
+한 `frame` event는 한 camera AU와 그 AU가 선택된 synchronized step의 canonical anchor context를 함께 가진다.
 
-### 7.1 한 step 전체를 JSON으로 받기
-
-```bash
-python scripts/receiver-metadata-client.py \
-  --endpoint "${ENDPOINT}" \
-  watch --session "${SESSION_ID}" \
-  --vectors --max-steps 1 \
-  > one-step.jsonl
-```
-
-`--vectors`가 없으면 vector 길이와 frame correlation 정보만 출력한다. `--vectors`를 주면 실제 `observation_state`, `action`, `auxiliary` 값과 decoded `anchor_context`까지 출력한다.
-
-camera별 frame metadata만 확인한다.
-
-```bash
-jq -c '.frames[] | {
-  camera_id,
-  capture_time_edge_ns,
-  skew_from_anchor_ns,
-  stream_epoch,
-  normalized_pts_ns,
-  access_unit_ordinal,
-  encoded_bytes
-}' one-step.jsonl
-```
-
-robot/context validity를 확인한다.
-
-```bash
-jq '{
-  step_time: .capture_time_edge_ns,
-  valid,
-  invalid_reason,
-  manifest_revision,
-  observation_state,
-  action,
-  auxiliary,
-  context: .anchor_context,
-  context_packet_sha256: .anchor_context_packet_sha256
-}' one-step.jsonl
-```
-
-### 7.2 주요 field의 정확한 의미
-
-| 위치 | 의미 |
+| field | 의미 |
 |---|---|
-| `SynchronizedDatasetStep.capture_time_edge_ns` | 기준 anchor AU의 Edge monotonic capture time. Unix epoch가 아님 |
-| `frames[].camera_id` | manifest의 `stable_camera_id` |
-| `frames[].capture_time_edge_ns` | 해당 camera AU의 공통 Edge timebase timestamp |
-| `frames[].skew_from_anchor_ns` | `camera capture time - anchor capture time`; anchor는 0 |
-| `frames[].stream_epoch` | reconnect/discontinuity 세대. epoch가 바뀌면 연속 stream으로 간주하지 않음 |
-| `frames[].normalized_pts_ns` | Receiver media timeline에서 정규화된 AU PTS |
-| `frames[].access_unit_ordinal` | 해당 stream epoch의 단조 증가 AU 번호 |
-| `frames[].encoded_image` | request의 `include_encoded_images=true`일 때만 들어오는 H.264 Annex-B AU |
-| `observation_state/action/auxiliary` | anchor context vector의 편의 mirror |
-| `anchor_context` | schema ID, frame sequence, 전체 vector, feature bitmap, device clock/quality, validity flag를 가진 canonical context |
-| `anchor_context_packet` | 전송된 exact serialized context와 CRC32C를 보존한 audit packet |
-| `valid/invalid_reason` | 해당 step 전체를 dataset/control 분석에 사용할 수 있는지 표시 |
+| `session_id` | Edge process가 만든 session UUID |
+| `camera_id`, `camera_key` | manifest stable ID와 URL-safe key |
+| `stream_epoch` | reconnect/discontinuity 세대 |
+| `access_unit_ordinal` | 해당 camera/epoch의 단조 증가 AU 번호 |
+| `capture_time_edge_ns` | camera AU의 공통 Edge monotonic capture time; Unix time이 아님 |
+| `step_capture_time_edge_ns` | 선택 기준 anchor AU capture time |
+| `skew_from_anchor_ns` | camera time - anchor time; anchor는 0 |
+| `normalized_pts_ns`, `media_pts_seconds` | HLS MPEG-TS와 동일하게 설정한 media timeline |
+| `anchor_frame_seq` | canonical robot context가 대응하는 anchor frame 번호 |
+| `valid`, `invalid_reason`, `validity_flags` | step/context 사용 가능 여부 |
+| `context_crc32c` | exact serialized anchor context의 Castagnoli CRC32C |
+| `observation_schema_id`, `action_schema_id` | vector layout version |
+| `named_features[]` | manifest slice를 적용한 이름/semantic/unit/shape/value/validity |
+| `device_quality[]` | source clock, interpolation gap, residual, action source quality |
 
-`frames` 배열은 camera ID로 정렬되므로 첫 원소가 anchor라고 가정하지 않는다. snapshot의 `manifest.anchor_camera_id`와 `frame.camera_id`를 비교한다.
+`named_features[]`는 `SessionManifestV1.feature_slices` 순서이며 각 항목은 `qualified_name`, `semantic`, `source_device_id`, `vector_kind`, `unit`, `shape`, `values`, `valid`, `required`를 제공한다. 따라서 web project가 RB-Y1 joint 순서를 하드코딩할 필요가 없다.
 
-## 8. Python gRPC에서 exact frame/AU/context 접근
+간단한 CLI 확인은 다음과 같다.
 
-아래 코드는 CLI 내부와 같은 평문 gRPC를 사용한다. `include_encoded_images=True`가 실제 H.264 bytes를 요청하는 핵심이다.
+```bash
+curl -Ns "${RELAY_ORIGIN}${METADATA_URL}" \
+  | sed -n 's/^data: //p' \
+  | jq '{camera_id, stream_epoch, access_unit_ordinal, media_pts_seconds,
+         anchor_frame_seq, valid, named_features, device_quality}'
+```
+
+## 7. canonical gRPC 접근
+
+웹 projection이 아니라 exact application feed가 필요하면 TCP 8083을 직접 사용한다. `ListSessions`로 session을 찾은 뒤 `GetSessionManifest`, `SubscribeSynchronizedSteps`를 사용한다.
+
+```bash
+ENDPOINT=10.30.0.20:8083
+python scripts/receiver-metadata-client.py --endpoint "${ENDPOINT}" sessions
+python scripts/receiver-metadata-client.py \
+  --endpoint "${ENDPOINT}" snapshot --session "${SESSION_ID}" > snapshot.json
+python scripts/receiver-metadata-client.py \
+  --endpoint "${ENDPOINT}" watch --session "${SESSION_ID}" \
+  --vectors --dump-dir ./received-h264 --max-steps 30 > steps.jsonl
+```
+
+`--dump-dir` 또는 `--view-camera`가 있어야 CLI가 `include_encoded_images=true`를 요청한다. 저장한 Annex-B 파일은 VLC/ffplay에서 열 수 있다.
+
+```bash
+vlc ./received-h264/front-left.h264
+ffplay -f h264 ./received-h264/front-left.h264
+```
+
+Python client의 핵심은 다음과 같다.
 
 ```python
 import sys
-import uuid
 from pathlib import Path
 
 import grpc
 
-repo = Path("/path/to/camera-doubler")
-sys.path.insert(0, str(repo / "python"))
-
-from generated import frame_metadata_pb2 as metadata_pb
+sys.path.insert(0, str(Path.cwd() / "python"))
 from generated import receiver_api_pb2 as receiver_pb
 from generated import receiver_api_pb2_grpc as receiver_grpc
 
-session = uuid.UUID("00000000-0000-0000-0000-000000000000").bytes
 channel = grpc.insecure_channel("10.30.0.20:8083")
 stub = receiver_grpc.ReceiverMetadataStub(channel)
-
-# Vector layout과 anchor camera ID를 먼저 고정한다.
-manifest_reply = stub.GetSessionManifest(
-    receiver_pb.GetSessionManifestRequest(session_id=session), timeout=10
-)
-manifest = metadata_pb.SessionManifestV1()
-manifest.ParseFromString(manifest_reply.serialized_session_manifest)
+sessions = stub.ListSessions(receiver_pb.ListSessionsRequest(), timeout=10).sessions
+session = next(s.session_id for s in sessions if s.authoritative and s.connected_cameras)
 
 request = receiver_pb.SubscribeSynchronizedStepsRequest(
     session_id=session,
     include_encoded_images=True,
-    camera_ids=[],  # empty: manifest dataset camera set
+    camera_ids=[],
 )
-
 for step in stub.SubscribeSynchronizedSteps(request):
-    context = step.anchor_context
-    packet = step.anchor_context_packet
-
-    print("anchor_seq", context.anchor_frame_seq)
-    print("step_time", step.capture_time_edge_ns)
-    print("valid", step.valid, step.invalid_reason)
-    print("context_crc32c", packet.payload_crc32c)
-    print("exact_context_bytes", len(packet.serialized_context))
-
+    assert step.valid, step.invalid_reason
     for frame in step.frames:
-        print(
-            frame.camera_id,
-            frame.capture_time_edge_ns,
-            frame.skew_from_anchor_ns,
-            frame.stream_epoch,
-            frame.access_unit_ordinal,
-            frame.encoded_image_media_type,
-            len(frame.encoded_image),
-        )
-        if frame.camera_id == manifest.anchor_camera_id:
-            with Path("anchor.h264").open("ab") as output:
-                output.write(frame.encoded_image)
-
-    break
-
-channel.close()
+        key = (bytes(step.session_id), frame.camera_id,
+               frame.stream_epoch, frame.access_unit_ordinal)
+        print(key, frame.capture_time_edge_ns, frame.skew_from_anchor_ns,
+              len(frame.encoded_image))
+    print(step.anchor_context, step.anchor_context_packet.payload_crc32c)
 ```
 
-`packet.serialized_context`를 다시 parse하면 `step.anchor_context`와 동일해야 한다.
+`anchor_context_packet.serialized_context`를 다시 protobuf parse한 값은 `step.anchor_context`와 같아야 한다. CRC32C는 일반 `zlib.crc32`가 아닌 Castagnoli CRC32C다.
 
-```python
-decoded = metadata_pb.AnchorFrameContextV1()
-decoded.ParseFromString(step.anchor_context_packet.serialized_context)
-assert decoded == step.anchor_context
-assert decoded.anchor_frame_seq == next(
-    frame.access_unit_ordinal
-    for frame in step.frames
-    if frame.camera_id == manifest.anchor_camera_id
-)
-```
+## 8. flattened vector를 이름으로 복원
 
-CRC32C는 일반 `zlib.crc32`가 아니다. 직접 검증하는 consumer는 Castagnoli CRC32C 구현을 사용해야 한다. Receiver가 성공적으로 publish한 step은 이미 packet CRC와 context invariant를 검증한 결과지만, archive/audit consumer는 exact packet bytes와 CRC를 다시 보존·검증한다.
-
-## 9. Flattened vector를 feature 이름으로 복원
-
-실제 robot metadata의 이름, offset, 길이, 단위, shape는 `SessionManifestV1.feature_slices`가 정의한다. 코드에 RB-Y1 joint 순서를 하드코딩하지 않는다.
+gRPC consumer는 manifest slice를 직접 적용한다. SSE consumer는 같은 계산이 끝난 `named_features`를 받는다.
 
 ```python
 vectors = {
@@ -335,107 +281,86 @@ vectors = {
     metadata_pb.FEATURE_VECTOR_KIND_ACTION: step.action,
     metadata_pb.FEATURE_VECTOR_KIND_AUXILIARY: step.auxiliary,
 }
-
 bitmap = step.anchor_context.feature_validity_bitmap
 
 for index, feature in enumerate(manifest.feature_slices):
     vector = vectors[feature.vector_kind]
-    begin = feature.offset
-    end = begin + feature.length
-    values = list(vector[begin:end])
-    feature_valid = bool(bitmap[index // 8] & (1 << (index % 8)))
-
+    begin, end = feature.offset, feature.offset + feature.length
+    assert end <= len(vector)
     print({
         "name": feature.qualified_name,
-        "semantic": feature.semantic,
-        "source_device_id": feature.source_device_id,
+        "values": list(vector[begin:end]),
+        "valid": bool(bitmap[index // 8] & (1 << (index % 8))),
         "unit": feature.unit,
         "shape": list(feature.shape),
-        "values": values,
-        "valid": feature_valid,
-        "required": feature.required,
     })
 ```
 
-다음 invariant를 consumer에서 확인한다.
+required feature/device가 invalid이거나 schema/manifest revision이 다르면 정상 dataset/control metadata로 저장하지 않는다.
 
-- `offset + length`가 해당 vector 길이를 넘지 않는다.
-- manifest의 observation/action/auxiliary vector length와 실제 step 길이가 같다.
-- `feature_validity_bitmap`의 bit `i`는 `feature_slices[i]`에 대응한다.
-- `anchor_context.manifest_revision`, observation/action schema ID가 manifest와 같다.
-- `anchor_context.device_quality[]`에서 required device의 `valid`, clock residual, interpolation gap을 확인한다.
-- `anchor_context.validity_flags`와 `step.valid`를 모두 확인하고 invalid step을 정상 데이터로 저장하지 않는다.
+## 9. 왜 Receiver가 원래 gRPC로 영상을 제공했는가
 
-## 10. 원본 H.264 SEI에서 직접 꺼낼 때
+gRPC는 단순 player protocol이 아니라 시스템의 canonical synchronized dataset contract다.
 
-일반 application은 검증과 동기화를 끝낸 gRPC step을 사용한다. decoder 이전 원본 증거를 다뤄야 하는 recorder/replay 도구만 SEI를 직접 읽는다.
+1. anchor context CRC, manifest/schema, camera identity와 timestamp를 Receiver가 검증한 뒤 publish한다.
+2. 한 step에서 여러 camera AU와 observation/action/quality를 loss 없이 묶는다.
+3. camera filter, exact fixed64 ordinal/time, optional encoded bytes와 backpressure 경계를 명시한다.
+4. Dataset/audit consumer가 browser/HLS segment 정책에 종속되지 않는다.
 
-| user-data-unregistered UUID | protobuf | 위치 |
-|---|---|---|
-| `4a1191e6-9578-53b3-92a7-04c049fe0d5b` | `SyncTimestampV1` | 모든 coded-picture AU에 정확히 하나 |
-| `62ef08bb-2eb4-59fb-b83f-f8f874a80043` | `AnchorFrameContextPacketV1` | anchor AU에만 하나 |
-| `791a8fc5-d0c3-5abf-81da-abf7f0373194` | `SessionManifestChunkV1` | anchor의 bounded manifest chunk |
+HLS는 browser/VLC 호환성을 위한 편의 projection이다. segment/keyframe 지연, playlist window, slow-client drop을 허용하며 exact 모든 frame delivery를 보장하지 않는다. 그래서 Relay도 raw SRT를 다시 해석하지 않고 검증된 gRPC stream을 한 번 구독한다. 이 방식이 기존 synchronization/validation을 중복 구현하지 않으면서 URL 영상을 추가한다.
 
-직접 parser를 만들 때는 `crates/metadata-codec`과 `config/protocol_constants.toml`을 기준으로 다음을 모두 지켜야 한다.
+## 10. 성능과 용량
 
-1. Annex-B start code로 NAL을 분리하고 NAL type 6 SEI를 찾는다.
-2. emulation-prevention byte를 제거한 RBSP에서 payload type 5를 찾는다.
-3. 앞 16-byte UUID로 protobuf type을 선택한다.
-4. timestamp exactly-one, anchor-only semantic metadata 규칙을 검사한다.
-5. context의 Castagnoli CRC32C를 exact `serialized_context` bytes에 대해 검사한다.
-6. manifest chunk count/index/size/CRC/compression limit와 timeout을 검사한다.
-7. manifest/session/schema ID가 connection envelope 및 context와 같은지 검사한다.
+Relay pipeline은 `appsrc → h264parse → mpegtsmux → hlssink`이며 decoder와 encoder가 없다. 따라서 GPU encoder session을 추가로 쓰지 않고 화질/bitrate도 바꾸지 않는다.
 
-단순히 VLC로 영상을 재생하는 것만으로는 이 protobuf SEI를 application metadata로 얻을 수 없다. 프레임 메타데이터 consumer는 gRPC 또는 repository의 replay/metadata codec을 사용한다.
+- Receiver→Relay traffic: 모든 camera encoded bitrate 합 `ΣB`가 한 번 추가된다.
+- HLS client traffic: 동시 viewer마다 선택한 camera bitrate가 Relay egress에 추가된다.
+- HLS cache 근사: camera별 `bitrate × target duration × max files / 8` bytes.
+- appsrc: camera별 최대 8 AU, downstream-leaky.
+- metadata history: camera별 최대 `RELAY_METADATA_HISTORY_PER_STREAM`; default 512 event.
+- SSE live queue: 전역 `RELAY_EVENT_BUFFER`; default 256 event.
+- gRPC step decode: `RELAY_GRPC_MAX_MESSAGE_MIB`; default 64 MiB, 허용 4–256 MiB.
 
-## 11. Raw archive에서 복원·검증
+4 Mbps, 1초 segment, 최대 8 file이면 HLS payload cache는 camera당 약 4 MB, 16 camera면 약 64 MB다. metadata 크기는 feature 수에 비례하므로 production camera/robot schema로 RSS를 측정한다. 별도 host Relay면 `ΣB`가 실제 NIC traffic이고, 같은 Compose host면 대부분 bridge/memory copy 비용이다.
+
+실제 synthetic 통합검증의 관측값과 1/4/16 camera 산정표는 `docs/implementation/WEB_RELAY_PERFORMANCE_ANALYSIS.md`에 있다. 작은 synthetic 수치를 production capacity로 그대로 사용하지 않는다.
+
+## 11. 기본 평문 외부 연결과 선택적 보호
+
+사내망 기본은 다음처럼 직접 publish된 port를 사용한다.
 
 ```bash
-docker run --rm \
-  -v "${ARCHIVE_ROOT}:/archive:ro" \
-  -v "${REPLAY_HMAC_KEY}:/run/secrets/replay_hmac_key:ro" \
-  --entrypoint /usr/local/bin/robot-replay-verify \
-  robot-multicam-receiver:local \
-  /archive \
-  /archive/stream-envelope.json \
-  /archive/segments/index.jsonl \
-  /run/secrets/replay_hmac_key
+nc -vz 10.30.0.20 8083
+nc -vz 10.30.0.20 8091
 ```
 
-실제 HMAC key는 secret mount로 전달한다. `metadata_sha256`, `step_sha256`, `deterministic=bit-for-bit` 결과를 episode audit record와 함께 보관한다.
+`RELAY_CORS_ALLOW_ORIGIN=*`도 기본값이므로 다른 사내 web origin에서 HLS/SSE를 읽을 수 있다. 이 구성은 암호화·사용자 인증이 없다. 인터넷에 그대로 port-forward하지 않는다.
 
-전체 client 경로는 synthetic SRT ingest까지 포함해 자동 검증할 수 있다.
+보호가 필요하면 application을 바꾸지 않고 선택적으로 VPN/source-IP firewall 또는 TLS/auth reverse proxy를 8091 앞에 둔다. gRPC 8083은 gRPC를 지원하는 L4/L7 proxy 또는 SSH tunnel을 사용한다.
+
+```bash
+ssh -N \
+  -L 18083:127.0.0.1:8083 \
+  -L 18091:127.0.0.1:8091 \
+  operator@receiver-host
+```
+
+H.264 pass-through HLS segment에는 원본 user-data-unregistered SEI가 남을 수 있다. 따라서 HLS URL 권한은 화면만이 아니라 in-band timestamp/anchor context 접근 권한으로 취급한다. SSE만 보호하고 HLS를 공개하는 것은 metadata를 완전히 보호하는 구성이 아니다.
+
+## 12. 문제 확인 순서
+
+1. `healthz` 200과 `readyz` body의 `receiver_grpc`, `active_session`, `hls_output`을 확인한다.
+2. `receiver-metadata-client.py sessions`에서 authoritative/connected session을 확인한다.
+3. catalog에 camera가 있고 `playlist_ready=true`인지 확인한다.
+4. IDR 간격과 HLS target 때문에 첫 segment가 늦는지 확인한다.
+5. `docker compose --profile web -f compose.receiver.yaml logs --tail=200 web-relay receiver`를 본다.
+6. `/metrics`의 `relay_grpc_reconnect_total`, `relay_access_unit_gap_total`, `relay_pipeline_restart_total`, `relay_sse_lag_total`을 확인한다.
+7. 웹 overlay가 늦으면 HLS playback delay보다 metadata history가 긴지, `media_pts_seconds` tolerance가 실제 FPS에 맞는지 확인한다.
+8. exact frame 누락을 허용할 수 없으면 HLS/SSE가 아니라 gRPC를 사용한다.
+
+전체 자동 검증은 실제 GStreamer remux/demux까지 실행한다.
 
 ```bash
 METADATA_CLIENT_PYTHON="$PWD/.venv-tools/bin/python" \
-  ./scripts/run-metadata-client-test.sh
+  ./scripts/run-web-relay-test.sh
 ```
-
-## 12. 선택 사항: 보호된 외부 연결
-
-사내망 밖이나 신뢰 경계가 다른 network에서는 평문 8083 직접 연결 대신 VPN, source-IP firewall 또는 SSH tunnel을 사용한다.
-
-```bash
-ssh -N -L 18083:127.0.0.1:8083 operator@receiver-host
-```
-
-이 경우 endpoint만 localhost tunnel로 바꾼다.
-
-```bash
-ENDPOINT=127.0.0.1:18083
-python scripts/receiver-metadata-client.py \
-  --endpoint "${ENDPOINT}" snapshot --session "${SESSION_ID}"
-```
-
-보호 연결을 사용해도 application protocol은 동일하며 영상/metadata field와 동기화 의미는 바뀌지 않는다.
-
-## 13. 문제 확인 순서
-
-1. `nc -vz RECEIVER 8083` 또는 `Test-NetConnection`으로 network path를 확인한다.
-2. session UUID가 현재 Edge process의 값인지 확인한다.
-3. `snapshot`에서 manifest와 authoritative anchor가 존재하는지 확인한다.
-4. camera의 `connected`, `manifest_validated`, epoch와 quality counter를 확인한다.
-5. `watch --max-steps 1 --vectors`로 metadata만 먼저 받는다.
-6. 그다음 `--camera`와 `--view-camera` 또는 `--dump-dir`로 encoded AU를 요청한다.
-7. 화면이 늦으면 IDR/SPS/PPS 대기 여부와 subscriber lag를 확인한다.
-8. `http://RECEIVER:8080`, RTSP 또는 ingest SRT port를 viewer URL로 시도하지 않는다.

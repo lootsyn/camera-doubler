@@ -1,31 +1,31 @@
 {
   "SchemaVersion": 2,
-  "CreatedAt": "2026-07-22T17:03:11.038651346Z",
+  "CreatedAt": "2026-07-22T19:08:31.987914625Z",
   "ArtifactName": "robot-multicam-receiver:local",
   "ArtifactType": "container_image",
   "Metadata": {
-    "Size": 688699904,
+    "Size": 688752640,
     "OS": {
       "Family": "debian",
       "Name": "12.15"
     },
-    "ImageID": "sha256:e78d2479ac06164a7c03b61a67d0c4d2665d44a6304a2a71ff5012acb22de75e",
+    "ImageID": "sha256:6b1a5a81bb59e0b8578fe686f3a3d8b5970d67b73790be2a969185b5fd1f5d00",
     "DiffIDs": [
       "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a",
       "sha256:c19700f0e2a2b569271c3b3a4a414f1412ee0940b357f97955d9ecd4b1af2c79",
-      "sha256:1dc125ee0aa42e107f23b01a95cd3ac8306e45d1cd0f52dcf6f215d5422b44ff",
-      "sha256:b13e59d0b24d3530c8d9ee29f14ccbd36666c0a37d59e57f47aee5bfe7dca7f9",
-      "sha256:9c4d96ee5403c563b6a4cde97017ea4bc1126488bb13856f8cd6dc9aebe77bfc"
+      "sha256:e5f8ab11e9ca1bd4e79f77caf93c0d30c8f70f608979b6eff36858a48e2b38dd",
+      "sha256:3d96118b4b78f4771a7d734b14ef2b57af4a343c227a841ecb9c0d9bfa93d0b9",
+      "sha256:ed2f09803806465f85bca5ddd29a9c33b27ed110e8b59327844eda6ab3b9f2e4"
     ],
     "RepoTags": [
       "robot-multicam-receiver:local"
     ],
     "RepoDigests": [
-      "robot-multicam-receiver@sha256:e78d2479ac06164a7c03b61a67d0c4d2665d44a6304a2a71ff5012acb22de75e"
+      "robot-multicam-receiver@sha256:6b1a5a81bb59e0b8578fe686f3a3d8b5970d67b73790be2a969185b5fd1f5d00"
     ],
     "ImageConfig": {
       "architecture": "amd64",
-      "created": "2026-07-23T01:47:17.372920066+09:00",
+      "created": "2026-07-23T03:37:21.492985944+09:00",
       "history": [
         {
           "created": "2026-07-13T00:00:00Z",
@@ -37,29 +37,29 @@
           "created_by": "/bin/sh -c apt-get update \u0026\u0026 apt-get install -y --no-install-recommends       ca-certificates libssl3       gstreamer1.0-tools       gstreamer1.0-plugins-base       gstreamer1.0-plugins-good       gstreamer1.0-plugins-bad       gstreamer1.0-plugins-ugly       gstreamer1.0-libav     \u0026\u0026 rm -rf /var/lib/apt/lists/*"
         },
         {
-          "created": "2026-07-22T16:47:08Z",
-          "created_by": "/bin/sh -c #(nop) COPY file:dd4cfe0602ee654c64208d861382d68ea17c4f875600627f020356362754eeaa in /usr/local/bin/robot-multicam-receiver "
+          "created": "2026-07-22T18:37:14Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:91aff78d970d9cc775b9e384bbe559eed221330dab19f4af4ef36d9a83c68dca in /usr/local/bin/robot-multicam-receiver "
         },
         {
-          "created": "2026-07-22T16:47:09Z",
-          "created_by": "/bin/sh -c #(nop) COPY file:2b5487810039eb93d94621c10b4bb952fd7ee4784522d0b89fc616fee01f8a35 in /usr/local/bin/robot-replay-verify "
+          "created": "2026-07-22T18:37:15Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:2210b8cd052547afa5b91ab5bc350293633faa0db4eb47b73c97cf8e5d3be1d4 in /usr/local/bin/robot-replay-verify "
         },
         {
-          "created": "2026-07-22T16:47:11Z",
+          "created": "2026-07-22T18:37:17Z",
           "created_by": "/bin/sh -c groupadd --gid 10001 receiver     \u0026\u0026 useradd --uid 10001 --gid receiver --no-create-home --shell /usr/sbin/nologin receiver"
         },
         {
-          "created": "2026-07-22T16:47:14Z",
+          "created": "2026-07-22T18:37:18Z",
           "created_by": "/bin/sh -c #(nop)  USER 10001:10001",
           "empty_layer": true
         },
         {
-          "created": "2026-07-22T16:47:16Z",
+          "created": "2026-07-22T18:37:20Z",
           "created_by": "/bin/sh -c #(nop)  ENTRYPOINT [\"/usr/local/bin/robot-multicam-receiver\"]",
           "empty_layer": true
         },
         {
-          "created": "2026-07-22T16:47:17Z",
+          "created": "2026-07-22T18:37:21Z",
           "created_by": "/bin/sh -c #(nop)  CMD [\"serve\"]",
           "empty_layer": true
         }
@@ -70,9 +70,9 @@
         "diff_ids": [
           "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a",
           "sha256:c19700f0e2a2b569271c3b3a4a414f1412ee0940b357f97955d9ecd4b1af2c79",
-          "sha256:1dc125ee0aa42e107f23b01a95cd3ac8306e45d1cd0f52dcf6f215d5422b44ff",
-          "sha256:b13e59d0b24d3530c8d9ee29f14ccbd36666c0a37d59e57f47aee5bfe7dca7f9",
-          "sha256:9c4d96ee5403c563b6a4cde97017ea4bc1126488bb13856f8cd6dc9aebe77bfc"
+          "sha256:e5f8ab11e9ca1bd4e79f77caf93c0d30c8f70f608979b6eff36858a48e2b38dd",
+          "sha256:3d96118b4b78f4771a7d734b14ef2b57af4a343c227a841ecb9c0d9bfa93d0b9",
+          "sha256:ed2f09803806465f85bca5ddd29a9c33b27ed110e8b59327844eda6ab3b9f2e4"
         ]
       },
       "config": {
@@ -100,19 +100,19 @@
         "DiffID": "sha256:c19700f0e2a2b569271c3b3a4a414f1412ee0940b357f97955d9ecd4b1af2c79"
       },
       {
-        "Size": 8856064,
-        "Digest": "sha256:857156d1d4ea38dd986ad8de8e6bbe109b39bd4b89439515998cc02e7d8c2379",
-        "DiffID": "sha256:1dc125ee0aa42e107f23b01a95cd3ac8306e45d1cd0f52dcf6f215d5422b44ff"
+        "Size": 8909312,
+        "Digest": "sha256:983c240621a653abb5a53a926d92845800bfb449982d24d2ae8051bdd2ae959c",
+        "DiffID": "sha256:e5f8ab11e9ca1bd4e79f77caf93c0d30c8f70f608979b6eff36858a48e2b38dd"
       },
       {
-        "Size": 1566720,
-        "Digest": "sha256:19a6ed926e613e229dc332efa6adbf9ecca768560c1e0f6f89b6e3a2b8e33249",
-        "DiffID": "sha256:b13e59d0b24d3530c8d9ee29f14ccbd36666c0a37d59e57f47aee5bfe7dca7f9"
+        "Size": 1566208,
+        "Digest": "sha256:3133e042b7889a55b577bbe58082fc66e82f63a09ce71059126e2a4700f33bba",
+        "DiffID": "sha256:3d96118b4b78f4771a7d734b14ef2b57af4a343c227a841ecb9c0d9bfa93d0b9"
       },
       {
         "Size": 15360,
-        "Digest": "sha256:e7026e2dd77599b7cab451e12ea27b181ac0d50ea88e7b1b41ce72d4bb8a5035",
-        "DiffID": "sha256:9c4d96ee5403c563b6a4cde97017ea4bc1126488bb13856f8cd6dc9aebe77bfc"
+        "Digest": "sha256:63b2c517abf4bd821a243af1efd5aa7cff77a5e90b8ae787665146a3f5f1969b",
+        "DiffID": "sha256:ed2f09803806465f85bca5ddd29a9c33b27ed110e8b59327844eda6ab3b9f2e4"
       }
     ]
   },

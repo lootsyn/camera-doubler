@@ -101,6 +101,7 @@ pub const MANIFEST_MAX_COMPRESSION_RATIO: usize = {};
     ];
     let includes: [&Path; 2] = [&proto_dir, vendored_include.as_path()];
     tonic_build::configure()
+        .bytes([".robot.receiver.v1.FrameReference.encoded_image"])
         .build_client(true)
         .build_server(true)
         .compile_protos(&protos, &includes)?;

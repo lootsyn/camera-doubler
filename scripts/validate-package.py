@@ -45,6 +45,7 @@ required = [
     ".env.edge.example",
     ".env.receiver.example",
     ".env.dataset-builder.example",
+    ".env.web-relay.example",
     ".env.adapter-rby1.example",
     "proto/frame_metadata.proto",
     "proto/adapter_api.proto",
@@ -56,6 +57,9 @@ required = [
     "docker/Dockerfile.edge-core",
     "docker/Dockerfile.receiver",
     "docker/Dockerfile.dataset-builder",
+    "docker/Dockerfile.web-relay",
+    "crates/web-relay/Cargo.toml",
+    "crates/web-relay/src/linux.rs",
     "adapters/rby1/docker/Dockerfile",
     "adapters/template/docker/Dockerfile",
     "docs/TRANSPORT_BOOTSTRAP.md",
@@ -65,6 +69,12 @@ required = [
     "scripts/verify-environment.sh",
     "scripts/bootstrap-example-config.sh",
     "scripts/generate-dev-secrets.sh",
+    "scripts/run-web-relay-test.sh",
+    "docs/implementation/WEB_RELAY_DEVELOPMENT_PLAN.md",
+    "docs/implementation/WEB_RELAY_PERFORMANCE_ANALYSIS.md",
+    "validation/web_relay_four_pass_results.json",
+    "validation/security/sbom-web-relay.cdx.json",
+    "validation/security/trivy-web-relay.json",
     "scripts/package.sh",
     "scripts/validate-package.py",
     "testdata/streamid_vectors.json",
@@ -100,7 +110,7 @@ else:
     protocol_constants = {}
 
 # Markdown fenced-code balance catches common packaging/edit mistakes.
-for p in sorted([ROOT / "ROBOT_MULTICAMERA_BACKEND_DESIGN.md", ROOT / "README.md", ROOT / "CHANGELOG.md"] + list((ROOT / "docs").glob("*.md"))):
+for p in sorted([ROOT / "ROBOT_MULTICAMERA_BACKEND_DESIGN.md", ROOT / "README.md", ROOT / "CHANGELOG.md"] + list((ROOT / "docs").rglob("*.md"))):
     if p.exists():
         fence_count = sum(1 for line in p.read_text(encoding="utf-8").splitlines() if line.startswith("```"))
         if fence_count % 2:
@@ -130,6 +140,18 @@ dataset_env_files = [
 ]
 if ".env.dataset-builder" not in dataset_env_files:
     error("dataset-builder must use .env.dataset-builder exact-version/export contract")
+receiver_services = (receiver_compose or {}).get("services") or {}
+relay_service = receiver_services.get("web-relay") or {}
+if "web" not in (relay_service.get("profiles") or []):
+    error("web-relay must remain an optional web profile")
+if relay_service.get("secrets"):
+    error("web-relay must not receive Receiver/Edge secrets")
+if relay_service.get("user") in {None, "0", "0:0", "root"}:
+    error("web-relay must run as an explicit non-root user")
+if relay_service.get("read_only") is not True:
+    error("web-relay root filesystem must be read-only")
+if "web-relay" in receiver_depends:
+    error("receiver must not depend on web-relay; ingest must remain independent")
 
 # Lightweight protobuf structural checks. CI MUST still compile with protoc.
 def iter_named_blocks(source: str):
@@ -180,6 +202,7 @@ def read(rel: str) -> str:
 edge_env = read(".env.edge.example")
 receiver_env = read(".env.receiver.example")
 dataset_env = read(".env.dataset-builder.example")
+web_relay_env = read(".env.web-relay.example")
 
 def validate_env_keys(rel: str, text: str) -> None:
     seen: set[str] = set()
@@ -197,6 +220,7 @@ def validate_env_keys(rel: str, text: str) -> None:
 validate_env_keys(".env.edge.example", edge_env)
 validate_env_keys(".env.receiver.example", receiver_env)
 validate_env_keys(".env.dataset-builder.example", dataset_env)
+validate_env_keys(".env.web-relay.example", web_relay_env)
 validate_env_keys(".env.adapter-rby1.example", read(".env.adapter-rby1.example"))
 for key in [
     "ANCHOR_CAMERA_SELECTOR", "SRT_BASE_PORT", "MAX_CAMERAS",
@@ -221,6 +245,14 @@ for key in [
 ]:
     if not re.search(rf"^{re.escape(key)}=", dataset_env, re.M):
         error(f".env.dataset-builder.example missing {key}")
+for key in [
+    "RECEIVER_GRPC_ENDPOINT", "RELAY_HTTP_BIND", "RELAY_OUTPUT_ROOT",
+    "RELAY_HLS_TARGET_DURATION_SEC", "RELAY_HLS_PLAYLIST_LENGTH", "RELAY_HLS_MAX_FILES",
+    "RELAY_EVENT_BUFFER", "RELAY_METADATA_HISTORY_PER_STREAM",
+    "RELAY_GRPC_MAX_MESSAGE_MIB",
+]:
+    if not re.search(rf"^{re.escape(key)}=", web_relay_env, re.M):
+        error(f".env.web-relay.example missing {key}")
 
 
 def env_int(text: str, key: str) -> int | None:
@@ -297,6 +329,35 @@ if review_json_path.exists():
     except Exception as exc:  # noqa: BLE001
         error(f"invalid validation/four_pass_results.json: {exc}")
 
+relay_review_path = ROOT / "validation/web_relay_four_pass_results.json"
+if relay_review_path.exists():
+    try:
+        relay_review = json.loads(relay_review_path.read_text(encoding="utf-8"))
+        reviews = relay_review.get("reviews") or []
+        acceptance = relay_review.get("acceptance") or {}
+        if relay_review.get("overall") != "PASS" or len(reviews) != 4:
+            error("web_relay_four_pass_results.json must contain four PASS reviews")
+        if any(item.get("status") != "PASS" for item in reviews):
+            error("web relay review status is not PASS")
+        if not acceptance or any(value != "PASS" for value in acceptance.values()):
+            error("web relay simultaneous-access acceptance is not all PASS")
+    except Exception as exc:  # noqa: BLE001
+        error(f"invalid validation/web_relay_four_pass_results.json: {exc}")
+
+relay_trivy_path = ROOT / "validation/security/trivy-web-relay.json"
+if relay_trivy_path.exists():
+    try:
+        relay_trivy = json.loads(relay_trivy_path.read_text(encoding="utf-8"))
+        vulnerabilities = [
+            vulnerability
+            for result in relay_trivy.get("Results", [])
+            for vulnerability in (result.get("Vulnerabilities") or [])
+        ]
+        if vulnerabilities:
+            error("web relay Trivy evidence contains HIGH/CRITICAL vulnerabilities")
+    except Exception as exc:  # noqa: BLE001
+        error(f"invalid validation/security/trivy-web-relay.json: {exc}")
+
 # Design requirements from the Receiver bootstrap revision.
 design = read("ROBOT_MULTICAMERA_BACKEND_DESIGN.md")
 for phrase in [
@@ -337,6 +398,8 @@ for phrase in [
         error(f"frame_metadata.proto missing required declaration: {phrase}")
 for phrase in [
     'import "frame_metadata.proto";',
+    "rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse)",
+    "message SessionStatus",
     "robot.multicam.v2.AnchorFrameContextV1 anchor_context = 11",
     "robot.multicam.v2.AnchorFrameContextPacketV1 anchor_context_packet = 12",
     "fixed64 access_unit_ordinal = 10",
@@ -388,6 +451,7 @@ elif len(sys.argv) == 2:
             ".env.edge",
             ".env.receiver",
             ".env.dataset-builder",
+            ".env.web-relay",
             ".env.adapter-rby1",
         }
         with zipfile.ZipFile(archive_path) as archive:

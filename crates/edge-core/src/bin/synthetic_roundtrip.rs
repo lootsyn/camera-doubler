@@ -40,6 +40,13 @@ fn main() {
 #[cfg(target_os = "linux")]
 fn main() -> Result<()> {
     gst::init().context("GStreamer initialization failed")?;
+    let frame_count = std::env::var("SYNTHETIC_FRAME_COUNT")
+        .unwrap_or_else(|_| "24".to_owned())
+        .parse::<u64>()
+        .context("SYNTHETIC_FRAME_COUNT must be an integer")?;
+    if !(12..=300).contains(&frame_count) {
+        return Err(anyhow!("SYNTHETIC_FRAME_COUNT must be between 12 and 300"));
+    }
     let archive_root = std::env::var_os("SYNTHETIC_ARCHIVE_ROOT").map(std::path::PathBuf::from);
     let explicit_output = std::env::var_os("SYNTHETIC_ROUNDTRIP_OUTPUT");
     let path = if let Some(root) = archive_root.as_ref() {
@@ -58,7 +65,7 @@ fn main() -> Result<()> {
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    let result = run(&path);
+    let result = run(&path, frame_count);
     if let (Ok(report), Some(root)) = (&result, archive_root.as_ref()) {
         write_archive_fixture(root, &path, report)?;
     }
@@ -84,14 +91,14 @@ struct RoundTripReport {
 }
 
 #[cfg(target_os = "linux")]
-fn run(path: &std::path::Path) -> Result<RoundTripReport> {
-    let capture = gst::parse::launch(
-        "videotestsrc num-buffers=24 is-live=false pattern=ball ! \
+fn run(path: &std::path::Path, frame_count: u64) -> Result<RoundTripReport> {
+    let capture = gst::parse::launch(&format!(
+        "videotestsrc num-buffers={frame_count} is-live=false pattern=ball ! \
          video/x-raw,width=320,height=240,framerate=30/1 ! videoconvert ! \
          x264enc tune=zerolatency speed-preset=ultrafast key-int-max=12 bframes=0 aud=true ! \
          h264parse config-interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au ! \
-         appsink name=encoded max-buffers=4 drop=false sync=false",
-    )?
+         appsink name=encoded max-buffers=4 drop=false sync=false"
+    ))?
     .downcast::<gst::Pipeline>()
     .map_err(|_| anyhow!("capture pipeline type mismatch"))?;
     let output = path
@@ -194,7 +201,7 @@ fn run(path: &std::path::Path) -> Result<RoundTripReport> {
     .next()
     .context("synthetic manifest produced no chunk")?;
     let mut encoded_count = 0_u64;
-    for frame_index in 0..24_u64 {
+    for frame_index in 0..frame_count {
         let sample = sink
             .try_pull_sample(gst::ClockTime::from_seconds(5))
             .with_context(|| format!("capture timed out at AU {frame_index}"))?;
@@ -242,8 +249,10 @@ fn run(path: &std::path::Path) -> Result<RoundTripReport> {
     wait_for_eos(&mux, "mux")?;
     capture.set_state(gst::State::Null)?;
     mux.set_state(gst::State::Null)?;
-    if encoded_count != 24 {
-        return Err(anyhow!("expected 24 encoded AUs, got {encoded_count}"));
+    if encoded_count != frame_count {
+        return Err(anyhow!(
+            "expected {frame_count} encoded AUs, got {encoded_count}"
+        ));
     }
     let transport_bytes = std::fs::metadata(path)?.len();
     if transport_bytes == 0 {

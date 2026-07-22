@@ -9,7 +9,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.85.1
@@ -18,7 +18,7 @@ jobs:
       - name: Install native test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler python3-yaml \
+          sudo apt-get install -y protobuf-compiler python3-yaml python3-venv \
             libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
             libgstreamer-plugins-bad1.0-dev gstreamer1.0-tools \
             gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
@@ -31,3 +31,14 @@ jobs:
       - run: scripts/run-synthetic-roundtrip.sh
       - run: docker compose -f compose.edge.yaml config -q
       - run: docker compose -f compose.receiver.yaml config -q
+      - run: docker compose --profile web -f compose.receiver.yaml config -q
+      - name: Build and verify external gRPC plus Web Relay
+        run: |
+          python3 -m venv .venv-tools
+          .venv-tools/bin/pip install -r python/metadata_client/requirements.txt
+          .venv-tools/bin/python scripts/generate-proto.py
+          scripts/generate-dev-secrets.sh
+          docker build -f docker/Dockerfile.edge-core -t robot-multicam-edge-core:local .
+          docker build -f docker/Dockerfile.receiver -t robot-multicam-receiver:local .
+          docker build -f docker/Dockerfile.web-relay -t robot-multicam-web-relay:local .
+          METADATA_CLIENT_PYTHON=.venv-tools/bin/python scripts/run-web-relay-test.sh

@@ -1,0 +1,37 @@
+{
+  "scope": "external native gRPC plus H.264 pass-through Web Relay",
+  "overall": "PASS",
+  "reviews": [
+    {
+      "pass": 1,
+      "topic": "API compatibility and session transition",
+      "status": "PASS",
+      "improvements": ["append-only ListSessions", "authoritative connected newest selection", "session polling"]
+    },
+    {
+      "pass": 2,
+      "topic": "copy cost and backpressure",
+      "status": "PASS",
+      "improvements": ["Bytes encoded payload", "one gRPC subscription", "bounded leaky appsrc"]
+    },
+    {
+      "pass": 3,
+      "topic": "fault isolation security and bounded storage",
+      "status": "PASS",
+      "improvements": ["safe camera key", "non-root secret-free container", "bounded tmpfs", "SEI exposure warning"]
+    },
+    {
+      "pass": 4,
+      "topic": "test observability and operations",
+      "status": "PASS",
+      "improvements": ["simultaneous gRPC HLS SSE integration", "gap and lag metrics", "bounded SSE history replay", "capacity formulas"]
+    }
+  ],
+  "acceptance": {
+    "external_grpc": "PASS",
+    "hls_url": "PASS",
+    "mpeg_ts_demux": "PASS",
+    "metadata_sse_history_and_live": "PASS",
+    "simultaneous_access": "PASS"
+  }
+}

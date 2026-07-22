@@ -1,5 +1,5 @@
 {
-  "audit_date": "2026-07-22",
+  "audit_date": "2026-07-23",
   "timezone": "Asia/Seoul",
   "basis": [
     "ROBOT_MULTICAMERA_BACKEND_DESIGN.md#29",
@@ -38,7 +38,7 @@
     {"id":"F20","status":"PASS","evidence":["AU hold/correlation fail-closed tests"]},
     {"id":"F21","status":"PASS","evidence":["Dataset Builder cadence pytest"]},
     {"id":"F22","status":"BLOCKED_HARDWARE","evidence":["independent branch tests","physical v4l2loopback unavailable"]},
-    {"id":"F23","status":"PASS","evidence":["5 Docker image builds","Compose config","hardened runtime tests"]},
+    {"id":"F23","status":"PASS","evidence":["6 Docker image builds","Compose config","hardened runtime tests","external gRPC plus Web Relay integration"]},
     {"id":"N01","status":"PASS","evidence":["scripts/verify-vendor-boundary.py"]},
     {"id":"N02","status":"PASS","evidence":["bounded branch tests","actual encrypted SRT reconnect"]},
     {"id":"N03","status":"PASS","evidence":["bounded resource tests","source scan"]},
@@ -55,7 +55,7 @@
     {"id":"N14","status":"PASS","evidence":["irregular cadence fail-closed pytest"]}
   ],
   "runtime": {
-    "rust_tests": {"passed":46,"failed":0},
+    "rust_tests": {"passed":48,"failed":0},
     "synthetic_access_units": 24,
     "replayed_access_units": 24,
     "synchronized_steps": 24,
@@ -68,6 +68,17 @@
     "docker_compose": "2.40.3",
     "gstreamer": "1.24.2",
     "fixable_high_critical_vulnerabilities": 0,
+    "web_relay": {
+      "image_id": "1ace178d7daf",
+      "external_grpc_hls_sse": "PASS",
+      "final_sample_runs": 3,
+      "relay_cpu_sample_percent_min": 0.51,
+      "relay_cpu_sample_percent_max": 0.60,
+      "relay_rss_sample_mib_min": 11.98,
+      "relay_rss_sample_mib_max": 19.86,
+      "paced_fixture_first_playlist_ms_min": 8029,
+      "paced_fixture_first_playlist_ms_max": 10270
+    },
     "blocked_environment": []
   },
   "hardware_gates": ["BH-01","BH-02","BH-03","BH-04","BH-05"]

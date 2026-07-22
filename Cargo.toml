@@ -11,6 +11,7 @@ members = [
   "crates/adapter-client",
   "crates/edge-core",
   "crates/receiver",
+  "crates/web-relay",
 ]
 
 [workspace.package]
@@ -22,6 +23,7 @@ license = "Apache-2.0"
 [workspace.dependencies]
 anyhow = "=1.0.95"
 async-trait = "=0.1.86"
+axum = "=0.7.9"
 base64 = "=0.22.1"
 blake3 = "=1.5.5"
 bytes = "=1.9.0"

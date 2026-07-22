@@ -5,6 +5,7 @@ package robot.receiver.v1;
 import "frame_metadata.proto";
 
 service ReceiverMetadata {
+  rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse);
   rpc ListCameras(ListCamerasRequest) returns (ListCamerasResponse);
   rpc GetAnchor(GetAnchorRequest) returns (GetAnchorResponse);
   rpc GetSessionManifest(GetSessionManifestRequest) returns (GetSessionManifestResponse);
@@ -12,6 +13,21 @@ service ReceiverMetadata {
   rpc SubscribeSynchronizedSteps(SubscribeSynchronizedStepsRequest)
       returns (stream SynchronizedDatasetStep);
 }
+
+message ListSessionsRequest {}
+
+message SessionStatus {
+  bytes session_id = 1;
+  fixed64 manifest_revision = 2;
+  string anchor_camera_id = 3;
+  bool authoritative = 4;
+  uint32 connected_cameras = 5;
+  fixed64 last_capture_time_edge_ns = 6;
+  fixed64 accepted_steps = 7;
+  fixed64 dropped_steps = 8;
+}
+
+message ListSessionsResponse { repeated SessionStatus sessions = 1; }
 
 message ListCamerasRequest { bytes session_id = 1; }
 

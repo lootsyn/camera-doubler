@@ -1,11 +1,11 @@
-Final release validation: 2026-07-22 Asia/Seoul
+Final release validation: 2026-07-23 Asia/Seoul
 
 Rust workspace
 - cargo fmt --all --check: PASS
 - cargo clippy --locked --workspace --all-targets --all-features -- -D warnings: PASS
-- cargo test --locked --workspace --all-features: PASS (46 passed, 0 failed)
+- cargo test --locked --workspace --all-features: PASS (48 passed, 0 failed)
 
-Edge deployed image robot-multicam-edge-core:local (d771f3294877)
+Edge deployed image robot-multicam-edge-core:local (2e2924a5ad1e)
 - non-root/read-only/cap-drop/no-new-privileges healthcheck: PASS
 - required GStreamer plugin discovery: PASS
 - H.264 synthetic round-trip: PASS (24 AUs)
@@ -13,7 +13,7 @@ Edge deployed image robot-multicam-edge-core:local (d771f3294877)
 - anchor CRC context and manifest: PASS
 - MPEG-TS mux/demux, predecode extraction, decoder branch: PASS
 
-Receiver deployed image robot-multicam-receiver:local (e78d2479ac06)
+Receiver deployed image robot-multicam-receiver:local (6b1a5a81bb59)
 - non-root/read-only/cap-drop/no-new-privileges self-test: PASS
 - raw replay: PASS (1 segment, 24 AUs, 24 synchronized steps)
 - metadata_sha256: 901bd0be6db8273e7cb79beb571899f093ea3d58e408a7e041b04629ccc48268
@@ -24,18 +24,27 @@ Receiver deployed image robot-multicam-receiver:local (e78d2479ac06)
 - session/camera acceptance log: PASS (non-secret UUID/camera/epoch/port only)
 - forced disk pressure: PASS (HTTP 503; disk_pressure low)
 
+Web Relay deployed image robot-multicam-web-relay:local (1ace178d7daf)
+- Linux Clippy -D warnings and release build: PASS
+- non-root/read-only/cap-drop/no-new-privileges, 512 MiB tmpfs: PASS
+- external native gRPC ListSessions/snapshot/watch while Relay subscribed: PASS
+- H.264 pass-through HLS playlist and MPEG-TS demux/H.264 parse: PASS
+- bounded-history SSE id/PTS/epoch/ordinal/CRC/named-feature correlation: PASS
+- three adjacent final-build snapshots: Receiver 0.79-0.85% CPU/34.99-37.52 MiB, Relay 0.51-0.60% CPU/11.98-19.86 MiB
+- intentionally 4 AU/s paced fixture first playlist: 8.029-10.270 s (not a 30 fps production benchmark)
+
 Python/runtime
 - official rby1-sdk==0.10.0 semantic self-test: PASS
 - RB-Y1 UDS descriptor/state/command/health smoke: PASS
 - Adapter template and gripper fixture: PASS
 - exact lerobot==0.6.0 transactional export tests: PASS (5 passed)
 - Dataset Builder hardened runtime /readyz: PASS
-- Receiver Compose stack: receiver healthy, dataset-builder healthy
+- Receiver Compose stack: receiver healthy, dataset-builder healthy, optional web-relay integration PASS
 - Edge Adapter Compose profiles: official-SDK RB-Y1 mock healthy, gripper fixture healthy
 
 Supply chain
-- CycloneDX SBOM generated for edge, receiver, dataset, rby1, template: PASS
-- Trivy 0.65.0 --ignore-unfixed --severity HIGH,CRITICAL: 0 findings for all 5 images
+- CycloneDX SBOM generated for edge, receiver, web-relay, dataset, rby1, template: PASS
+- Trivy 0.65.0 --ignore-unfixed --severity HIGH,CRITICAL: 0 findings for all 6 images
 - package content validator and vendor boundary: PASS
 
 Hardware-only gates

@@ -1,31 +1,31 @@
 {
   "SchemaVersion": 2,
-  "CreatedAt": "2026-07-22T17:03:03.596162655Z",
+  "CreatedAt": "2026-07-22T19:08:23.383139712Z",
   "ArtifactName": "robot-multicam-edge-core:local",
   "ArtifactType": "container_image",
   "Metadata": {
-    "Size": 696815616,
+    "Size": 696852480,
     "OS": {
       "Family": "debian",
       "Name": "12.15"
     },
-    "ImageID": "sha256:d771f32948776b74d40aa23a74ccfb30f45e70365c32eb041274f7f53d9587ca",
+    "ImageID": "sha256:2e2924a5ad1e547ebd2092738bc13a79f4b16e466fe973f808258c0b95cfec67",
     "DiffIDs": [
       "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a",
       "sha256:f95befdd4c56676d177568b88f6076e46ca1b0980047ee9c9d8f63763be792cc",
-      "sha256:bd251a43a6a339acde3b0d243d43aa8e100d27fc597a4659f4319597b11f835c",
-      "sha256:e56e1e7bf879866f53c75b36fa7391d110d76162404f4ea21cb5b16e46aaa5d2",
-      "sha256:10db8ce344ec65bfbcda981788b0258330cafe44e4f11ebd5bf43c7bd3fca2ae"
+      "sha256:c118ab0af3c7049be60e4d4919578e8ff2dab3582ba2d6701096a345626d899a",
+      "sha256:f2e64afa9d0bab037e0c958af0326657fc87ef061a5115965d9b7fb8ad033cc5",
+      "sha256:c1100472560bf16b3ae3665c6a3e55cbccbc998503175bbdf6fceb8c69537cad"
     ],
     "RepoTags": [
       "robot-multicam-edge-core:local"
     ],
     "RepoDigests": [
-      "robot-multicam-edge-core@sha256:d771f32948776b74d40aa23a74ccfb30f45e70365c32eb041274f7f53d9587ca"
+      "robot-multicam-edge-core@sha256:2e2924a5ad1e547ebd2092738bc13a79f4b16e466fe973f808258c0b95cfec67"
     ],
     "ImageConfig": {
       "architecture": "amd64",
-      "created": "2026-07-23T01:58:36.928104283+09:00",
+      "created": "2026-07-23T03:45:29.446954358+09:00",
       "history": [
         {
           "created": "2026-07-13T00:00:00Z",
@@ -42,29 +42,29 @@
           "empty_layer": true
         },
         {
-          "created": "2026-07-22T16:58:26Z",
-          "created_by": "/bin/sh -c #(nop) COPY file:b94daa3acffc7eb0a4df07d601217741594ae6d7ed22b6e02478d8339a01b9c4 in /usr/local/bin/robot-edge-core "
+          "created": "2026-07-22T18:45:22Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:690c2f5ea47f36edab3ee0ce734d108e8cfa49b9ede5767012fe6d0d6ec5c25b in /usr/local/bin/robot-edge-core "
         },
         {
-          "created": "2026-07-22T16:58:28Z",
-          "created_by": "/bin/sh -c #(nop) COPY file:2c84773d27aa21237162daf985c25cc0a6f5eef2805d76577a9ef63834001c12 in /usr/local/bin/robot-synthetic-roundtrip "
+          "created": "2026-07-22T18:45:23Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:61fb57fe82635faa8e590f499e033438c583c054eb9136d2be7aa9d86c4f58dd in /usr/local/bin/robot-synthetic-roundtrip "
         },
         {
-          "created": "2026-07-22T16:58:30Z",
+          "created": "2026-07-22T18:45:25Z",
           "created_by": "/bin/sh -c groupadd --gid 10001 edge     \u0026\u0026 useradd --uid 10001 --gid edge --groups video --no-create-home --shell /usr/sbin/nologin edge"
         },
         {
-          "created": "2026-07-22T16:58:33Z",
+          "created": "2026-07-22T18:45:26Z",
           "created_by": "/bin/sh -c #(nop)  USER 10001:10001",
           "empty_layer": true
         },
         {
-          "created": "2026-07-22T16:58:35Z",
+          "created": "2026-07-22T18:45:28Z",
           "created_by": "/bin/sh -c #(nop)  ENTRYPOINT [\"/usr/local/bin/robot-edge-core\"]",
           "empty_layer": true
         },
         {
-          "created": "2026-07-22T16:58:36Z",
+          "created": "2026-07-22T18:45:29Z",
           "created_by": "/bin/sh -c #(nop)  CMD [\"serve\"]",
           "empty_layer": true
         }
@@ -75,9 +75,9 @@
         "diff_ids": [
           "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a",
           "sha256:f95befdd4c56676d177568b88f6076e46ca1b0980047ee9c9d8f63763be792cc",
-          "sha256:bd251a43a6a339acde3b0d243d43aa8e100d27fc597a4659f4319597b11f835c",
-          "sha256:e56e1e7bf879866f53c75b36fa7391d110d76162404f4ea21cb5b16e46aaa5d2",
-          "sha256:10db8ce344ec65bfbcda981788b0258330cafe44e4f11ebd5bf43c7bd3fca2ae"
+          "sha256:c118ab0af3c7049be60e4d4919578e8ff2dab3582ba2d6701096a345626d899a",
+          "sha256:f2e64afa9d0bab037e0c958af0326657fc87ef061a5115965d9b7fb8ad033cc5",
+          "sha256:c1100472560bf16b3ae3665c6a3e55cbccbc998503175bbdf6fceb8c69537cad"
         ]
       },
       "config": {
@@ -107,19 +107,19 @@
         "DiffID": "sha256:f95befdd4c56676d177568b88f6076e46ca1b0980047ee9c9d8f63763be792cc"
       },
       {
-        "Size": 14695424,
-        "Digest": "sha256:da1060d60a328fc3f156ec9f6d0029ff6bc2b34f56f4dfee18dd99d3ace30f08",
-        "DiffID": "sha256:bd251a43a6a339acde3b0d243d43aa8e100d27fc597a4659f4319597b11f835c"
+        "Size": 14720512,
+        "Digest": "sha256:b7bd8516729537b7ffcbdb854dcb250f7263b241756eb4d2c1d0fbb16d5001b0",
+        "DiffID": "sha256:c118ab0af3c7049be60e4d4919578e8ff2dab3582ba2d6701096a345626d899a"
       },
       {
-        "Size": 1464832,
-        "Digest": "sha256:65ffb6f9fb957e5e2daa6041329a53243e96cbe72029e5716ee3b26add07a4fe",
-        "DiffID": "sha256:e56e1e7bf879866f53c75b36fa7391d110d76162404f4ea21cb5b16e46aaa5d2"
+        "Size": 1476608,
+        "Digest": "sha256:2f143b1e58d1038d0f5e5c2d89a88fa2ac7036bc1577281b237003dd05de9659",
+        "DiffID": "sha256:f2e64afa9d0bab037e0c958af0326657fc87ef061a5115965d9b7fb8ad033cc5"
       },
       {
         "Size": 15360,
-        "Digest": "sha256:38f6602faba2a19b589a0be7baab1e8f07e53cbfaf015e9b3891b66f64bff2de",
-        "DiffID": "sha256:10db8ce344ec65bfbcda981788b0258330cafe44e4f11ebd5bf43c7bd3fca2ae"
+        "Digest": "sha256:ca4e290e51551f2c46a9d2403e11a19e365aa1a575da3a9fe1880fcf5dbbe045",
+        "DiffID": "sha256:c1100472560bf16b3ae3665c6a3e55cbccbc998503175bbdf6fceb8c69537cad"
       }
     ]
   },

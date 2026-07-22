@@ -275,9 +275,9 @@ fn reference(frame: &StoredFrame, skew: i64, include: bool) -> FrameReference {
         skew_from_anchor_ns: skew,
         storage_uri: frame.storage_uri.clone(),
         encoded_image: if include {
-            frame.encoded_image.clone()
+            frame.encoded_image.clone().into()
         } else {
-            Vec::new()
+            bytes::Bytes::new()
         },
         encoded_image_media_type: if include {
             "video/h264".to_owned()

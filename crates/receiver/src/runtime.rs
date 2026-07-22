@@ -16,8 +16,8 @@ use robot_multicam_protocol::receiver::receiver_metadata_server::{
 use robot_multicam_protocol::receiver::{
     CameraQuality, CameraStatus, GetAnchorRequest, GetAnchorResponse, GetSessionManifestRequest,
     GetSessionManifestResponse, GetSessionQualityRequest, GetSessionQualityResponse,
-    ListCamerasRequest, ListCamerasResponse, SubscribeSynchronizedStepsRequest,
-    SynchronizedDatasetStep,
+    ListCamerasRequest, ListCamerasResponse, ListSessionsRequest, ListSessionsResponse,
+    SessionStatus, SubscribeSynchronizedStepsRequest, SynchronizedDatasetStep,
 };
 use robot_multicam_stream_identity::Role;
 use thiserror::Error;
@@ -58,6 +58,7 @@ struct SessionRuntime {
     synchronizer: Option<StepSynchronizer>,
     accepted_steps: u64,
     dropped_steps: u64,
+    last_capture_time_edge_ns: u64,
 }
 
 #[derive(Debug)]
@@ -148,6 +149,7 @@ impl ReceiverRuntime {
             match synchronizer.anchor_step(frame, &packet, true) {
                 Ok(step) => {
                     session.accepted_steps = session.accepted_steps.saturating_add(1);
+                    session.last_capture_time_edge_ns = step.capture_time_edge_ns;
                     let _ = self.steps.send(step);
                 }
                 Err(SynchronizeError::MissingCamera | SynchronizeError::Context) => {
@@ -258,6 +260,53 @@ impl ReceiverRuntime {
             .ok_or(RuntimeError::ManifestChunk)?;
         Ok((session.accepted_steps, session.dropped_steps))
     }
+
+    fn session_statuses(&self) -> Result<Vec<SessionStatus>, RuntimeError> {
+        let sessions = {
+            let sessions = self.sessions.lock().map_err(|_| RuntimeError::Poisoned)?;
+            sessions
+                .iter()
+                .map(|(session_id, session)| {
+                    (
+                        *session_id,
+                        session.manifest.clone(),
+                        session.last_capture_time_edge_ns,
+                        session.accepted_steps,
+                        session.dropped_steps,
+                    )
+                })
+                .collect::<Vec<_>>()
+        };
+        let mut statuses = Vec::with_capacity(sessions.len());
+        for (session_id, manifest, last_capture_time_edge_ns, accepted_steps, dropped_steps) in
+            sessions
+        {
+            let connected_cameras = self
+                .registry
+                .snapshots(Some(session_id))?
+                .into_iter()
+                .filter(|snapshot| snapshot.connected)
+                .count();
+            let connected_cameras =
+                u32::try_from(connected_cameras).map_err(|_| RuntimeError::ManifestChunk)?;
+            statuses.push(SessionStatus {
+                session_id: session_id.as_bytes().to_vec(),
+                manifest_revision: manifest
+                    .as_ref()
+                    .map_or(0, |manifest| manifest.manifest_revision),
+                anchor_camera_id: manifest
+                    .as_ref()
+                    .map_or_else(String::new, |manifest| manifest.anchor_camera_id.clone()),
+                authoritative: manifest.is_some(),
+                connected_cameras,
+                last_capture_time_edge_ns,
+                accepted_steps,
+                dropped_steps,
+            });
+        }
+        statuses.sort_by_key(|status| status.last_capture_time_edge_ns);
+        Ok(statuses)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -279,6 +328,15 @@ type StepStream = Pin<
 #[tonic::async_trait]
 impl ReceiverMetadata for ReceiverMetadataService {
     type SubscribeSynchronizedStepsStream = StepStream;
+
+    async fn list_sessions(
+        &self,
+        _request: Request<ListSessionsRequest>,
+    ) -> Result<Response<ListSessionsResponse>, Status> {
+        Ok(Response::new(ListSessionsResponse {
+            sessions: self.runtime.session_statuses().map_err(internal)?,
+        }))
+    }
 
     async fn list_cameras(
         &self,
@@ -560,6 +618,16 @@ mod tests {
         assert_eq!(step.capture_time_edge_ns, 200);
         assert_eq!(step.frames.len(), 2);
         assert_eq!(step.observation_state, vec![1.0]);
+        let statuses = runtime.session_statuses().expect("session statuses");
+        assert_eq!(statuses.len(), 1);
+        assert_eq!(statuses[0].session_id, session_id.as_bytes());
+        assert_eq!(statuses[0].manifest_revision, 1);
+        assert_eq!(statuses[0].anchor_camera_id, "anchor");
+        assert!(statuses[0].authoritative);
+        assert_eq!(statuses[0].connected_cameras, 2);
+        assert_eq!(statuses[0].last_capture_time_edge_ns, 200);
+        assert_eq!(statuses[0].accepted_steps, 1);
+        assert_eq!(statuses[0].dropped_steps, 1);
     }
 
     fn manifest() -> SessionManifestV1 {

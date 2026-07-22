@@ -1,0 +1,115 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2026-07-22T19:18:02.173376564Z",
+  "ArtifactName": "robot-multicam-web-relay:local",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "Size": 643357184,
+    "OS": {
+      "Family": "debian",
+      "Name": "12.15"
+    },
+    "ImageID": "sha256:1ace178d7daff9eea72681af10d70d4661e32059a7dcf05bd0e2f39327f3aa6f",
+    "DiffIDs": [
+      "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a",
+      "sha256:7ef7405373a3257d710b841a99dc190f59d0bc8e46d769b47fa23cb26b6c5c6b",
+      "sha256:5dfbf1988423526a1f1cd0a1e3e2b6824c87744a96aa3679000049344fac3cce",
+      "sha256:e18c6de44989780d69cda394997d04c8c7262272ff83b899644d786aae2a1e16"
+    ],
+    "RepoTags": [
+      "robot-multicam-web-relay:local"
+    ],
+    "RepoDigests": [
+      "robot-multicam-web-relay@sha256:1ace178d7daff9eea72681af10d70d4661e32059a7dcf05bd0e2f39327f3aa6f"
+    ],
+    "ImageConfig": {
+      "architecture": "amd64",
+      "created": "2026-07-23T04:16:39.695587823+09:00",
+      "history": [
+        {
+          "created": "2026-07-13T00:00:00Z",
+          "created_by": "# debian.sh --arch 'amd64' out/ 'bookworm' '@1783900800'",
+          "comment": "debuerreotype 0.17"
+        },
+        {
+          "created": "2026-07-22T18:32:45Z",
+          "created_by": "/bin/sh -c apt-get update \u0026\u0026 apt-get install -y --no-install-recommends       ca-certificates libssl3       gstreamer1.0-tools       gstreamer1.0-plugins-base       gstreamer1.0-plugins-good       gstreamer1.0-plugins-bad     \u0026\u0026 rm -rf /var/lib/apt/lists/*"
+        },
+        {
+          "created": "2026-07-22T19:16:34Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:0e603d69fb700500aa97414dc9f80307c9ef2ad2f57475ae00668687b93ac148 in /usr/local/bin/robot-multicam-web-relay "
+        },
+        {
+          "created": "2026-07-22T19:16:35Z",
+          "created_by": "/bin/sh -c groupadd --gid 10002 relay     \u0026\u0026 useradd --uid 10002 --gid relay --no-create-home --shell /usr/sbin/nologin relay"
+        },
+        {
+          "created": "2026-07-22T19:16:37Z",
+          "created_by": "/bin/sh -c #(nop)  USER 10002:10002",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-22T19:16:38Z",
+          "created_by": "/bin/sh -c #(nop)  ENTRYPOINT [\"/usr/local/bin/robot-multicam-web-relay\"]",
+          "empty_layer": true
+        },
+        {
+          "created": "2026-07-22T19:16:39Z",
+          "created_by": "/bin/sh -c #(nop)  CMD [\"serve\"]",
+          "empty_layer": true
+        }
+      ],
+      "os": "linux",
+      "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+          "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a",
+          "sha256:7ef7405373a3257d710b841a99dc190f59d0bc8e46d769b47fa23cb26b6c5c6b",
+          "sha256:5dfbf1988423526a1f1cd0a1e3e2b6824c87744a96aa3679000049344fac3cce",
+          "sha256:e18c6de44989780d69cda394997d04c8c7262272ff83b899644d786aae2a1e16"
+        ]
+      },
+      "config": {
+        "Cmd": [
+          "serve"
+        ],
+        "Entrypoint": [
+          "/usr/local/bin/robot-multicam-web-relay"
+        ],
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "User": "10002:10002"
+      }
+    },
+    "Layers": [
+      {
+        "Size": 77895680,
+        "Digest": "sha256:597c6c618d36213af657a6a8444a5d87801f9a219682b206ad21ccb8f3e57bbd",
+        "DiffID": "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a"
+      },
+      {
+        "Size": 555739648,
+        "Digest": "sha256:d6bb37b643d957464be9d80be194e7cb059715249e6eedc5cfe6f7bce87a2049",
+        "DiffID": "sha256:7ef7405373a3257d710b841a99dc190f59d0bc8e46d769b47fa23cb26b6c5c6b"
+      },
+      {
+        "Size": 9706496,
+        "Digest": "sha256:5451804e2616ef7eee2ac830a057e650e2a1ae86aee9cf3e7f4605cd3109e991",
+        "DiffID": "sha256:5dfbf1988423526a1f1cd0a1e3e2b6824c87744a96aa3679000049344fac3cce"
+      },
+      {
+        "Size": 15360,
+        "Digest": "sha256:a0cdf11b435d115e06fe5ca5bb02b5317183acf1c542f5ba7ca54abb44e589a4",
+        "DiffID": "sha256:e18c6de44989780d69cda394997d04c8c7262272ff83b899644d786aae2a1e16"
+      }
+    ]
+  },
+  "Results": [
+    {
+      "Target": "robot-multicam-web-relay:local (debian 12.15)",
+      "Class": "os-pkgs",
+      "Type": "debian"
+    }
+  ]
+}

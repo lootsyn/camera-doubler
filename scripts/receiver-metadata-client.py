@@ -101,6 +101,25 @@ def snapshot(args: argparse.Namespace) -> int:
         channel.close()
 
 
+def sessions(args: argparse.Namespace) -> int:
+    channel, stub = connect(args.endpoint, args.connect_timeout)
+    try:
+        response = stub.ListSessions(receiver_pb.ListSessionsRequest(), timeout=args.timeout)
+        output = []
+        for status in response.sessions:
+            item = message_dict(status)
+            item["session_id"] = str(uuid.UUID(bytes=status.session_id))
+            output.append(item)
+        print(json.dumps({"sessions": output}, ensure_ascii=False, indent=2))
+        return 0
+    except grpc.RpcError as error:
+        raise SystemExit(
+            f"Receiver session discovery failed: {error.code().name}: {error.details()}"
+        ) from error
+    finally:
+        channel.close()
+
+
 def safe_camera_name(camera_id: str) -> str:
     value = re.sub(r"[^A-Za-z0-9._-]+", "_", camera_id).strip("._")
     return value or "camera"
@@ -232,6 +251,10 @@ def parser() -> argparse.ArgumentParser:
     value.add_argument("--endpoint", default="127.0.0.1:8083")
     value.add_argument("--connect-timeout", type=float, default=5.0)
     subparsers = value.add_subparsers(dest="command", required=True)
+
+    sessions_parser = subparsers.add_parser("sessions", help="list discovered Receiver sessions")
+    sessions_parser.add_argument("--timeout", type=float, default=10.0)
+    sessions_parser.set_defaults(function=sessions)
 
     inspect_parser = subparsers.add_parser("snapshot", help="print cameras, anchor, quality, and manifest")
     inspect_parser.add_argument("--session", required=True, type=session_bytes)

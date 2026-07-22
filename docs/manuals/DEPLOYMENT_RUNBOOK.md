@@ -10,19 +10,21 @@ Edge host: Hardware Adapters ─UDS─ Edge Core ─SRT/UDP─► Receiver
           │                              │                │
           └─ /dev/video40+slot           │                ├─ gRPC metadata/H.264 AU :8083
              local LeRobot UI            └─ mTLS control ◄┤
-                                                          └─ Dataset Builder :8090 (internal)
+                                                          ├─ Dataset Builder :8090 (internal)
+                                                          └─ optional Web Relay :8091 (HLS/SSE)
 ```
 
 | 방향 | protocol/port | 목적 | 공개 정책 |
 |---|---|---|---|
 | Edge → Receiver | UDP `SRT_BASE_PORT..+MAX_CAMERAS-1` | 카메라별 encrypted MPEG-TS/SRT | Edge IP에서만 허용 |
 | Metadata client → Receiver | TCP 8083 | 평문 ReceiverMetadata gRPC와 선택적 H.264 AU | 사내망 direct가 기본; VPN/SSH는 선택 |
+| Browser/VLC → Web Relay | TCP 8091 | HLS URL, metadata SSE, stream catalog | 사내망 direct가 기본; TLS/auth proxy는 선택 |
 | Monitoring → Receiver | TCP 9090 | `/healthz`, `/readyz`, `/metrics` | monitoring subnet만 |
 | Receiver → Edge | TCP 8082 | mTLS control gateway | Receiver IP에서만 허용 |
 | Monitoring → Edge | TCP 9091 | Edge health/readiness/metrics | monitoring subnet만 |
 | Receiver → Dataset Builder | TCP 8090, Compose network | export service | 외부 publish 금지 |
 
-TCP 8080은 현재 호환성용 reserved port이며 browser video/REST endpoint가 아니다. VLC용 HTTP/HLS/RTSP/SRT 출력도 없으므로 외부 영상은 `VIDEO_AND_METADATA_ACCESS.md`의 gRPC H.264 경로를 사용한다. TCP 8083은 TLS/auth 없는 평문 gRPC이므로 기본 direct 연결은 신뢰할 수 있는 사내망으로 한정한다.
+TCP 8080은 현재 호환성용 reserved port다. URL 영상이 필요하면 `web` profile의 TCP 8091 HLS를 사용하고, exact application feed는 TCP 8083 gRPC를 사용한다. 둘 다 TLS/auth 없는 평문이므로 기본 direct 연결은 신뢰할 수 있는 사내망으로 한정한다.
 
 ## 2. 최초 host 준비
 
@@ -56,6 +58,15 @@ curl -fsS http://127.0.0.1:9090/readyz
 ```
 
 카메라가 아직 연결되지 않아도 service process와 listener가 healthy여야 한다. `readyz`는 disk 또는 bootstrap 상태에 따라 fail할 수 있으므로 response body의 개별 check를 확인한다.
+
+URL 영상도 제공하려면 같은 Receiver를 `web` profile과 함께 시작한다.
+
+```bash
+docker compose --profile web -f compose.receiver.yaml up -d --build --wait --wait-timeout 180
+curl -fsS http://127.0.0.1:8091/healthz
+```
+
+Relay의 `readyz`는 active authoritative session과 HLS pipeline이 생긴 뒤 200이다. URL은 `/api/v1/streams` catalog에서 찾는다. Relay failure는 Receiver readiness나 ingest를 내리지 않는다.
 
 ### 3.2 Adapter 시작
 
@@ -106,6 +117,7 @@ ffplay -fflags nobuffer -f v4l2 -i /dev/video40
 
 ```bash
 docker compose -f compose.receiver.yaml logs --tail=200 receiver dataset-builder
+docker compose --profile web -f compose.receiver.yaml logs --tail=200 web-relay
 docker compose --profile rby1 -f compose.edge.yaml logs --tail=200 edge-core adapter-rby1
 curl -fsS http://127.0.0.1:9090/metrics | grep '^robot_'
 curl -fsS http://127.0.0.1:9091/metrics | grep '^robot_'
@@ -139,5 +151,6 @@ docker compose -f compose.receiver.yaml stop dataset-builder receiver
 5. `scripts/run-synthetic-roundtrip.sh`로 physical camera와 독립된 codec gate 확인.
 6. `scripts/run-srt-reconnect-test.sh`로 authenticated reconnect 확인.
 7. Adapter `healthcheck`와 UDS socket permission 확인.
+8. URL 영상은 Relay catalog/readyz와 `relay_access_unit_gap_total`, `relay_pipeline_restart_total`, `relay_sse_lag_total` 확인.
 
 상세 failure semantics, retention, key rotation은 `docs/OPERATIONS.md`를 따른다.

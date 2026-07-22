@@ -6,7 +6,7 @@
 
 | 경로 | 성격 | 재생성 방법 |
 |---|---|---|
-| `.env.edge`, `.env.receiver`, `.env.dataset-builder`, `.env.adapter-*` | 배포별 주소·selector·용량 값 | `scripts/bootstrap-example-config.sh` 실행 후 수정 |
+| `.env.edge`, `.env.receiver`, `.env.dataset-builder`, `.env.web-relay`, `.env.adapter-*` | 배포별 주소·selector·용량 값 | `scripts/bootstrap-example-config.sh` 실행 후 수정 |
 | `config/camera-policy.yaml`, `config/embodiment.yaml` | 실제 장치 mapping | 같은 bootstrap script 실행 후 장치에 맞게 수정 |
 | `secrets/*` | SRT/HMAC/mTLS key와 certificate | 개발은 `scripts/generate-dev-secrets.sh`, production은 외부 PKI/secret manager |
 | `python/generated/` | protobuf generated Python SDK | `python scripts/generate-proto.py` |
@@ -57,6 +57,17 @@ gst-launch-1.0 --version
 - `SRT_LISTEN_BASE_PORT`, `MAX_CAMERAS`, `SRT_PBKEYLEN`: Edge와 동일.
 - `MIN_FREE_DISK_GB`: Docker volume 또는 bind mount의 실제 용량보다 작고 운영 여유보다 크게 설정한다.
 - `RECEIVER_GRPC_BIND`: metadata client가 접근할 bind. 공개 인터넷에 직접 노출하지 않는다.
+
+### Web Relay
+
+- `RECEIVER_GRPC_ENDPOINT`: Compose 내부에서는 `http://receiver:8083`; plaintext scheme을 명시한다.
+- `RELAY_HTTP_BIND`: HLS/SSE/catalog bind. 기본 `0.0.0.0:8091`은 사내망 직접 접근용이다.
+- `RELAY_HLS_*`: target/playlist/max-file 상한. tmpfs 용량과 GOP 간격에 맞춘다.
+- `RELAY_METADATA_HISTORY_PER_STREAM`: HLS wall-clock 지연보다 긴 frame 수를 두되 feature 크기×camera 수의 heap을 측정한다.
+- `RELAY_GRPC_MAX_MESSAGE_MIB`: 모든 camera AU가 한 step에 모인 최대 크기보다 크게, 4–256 MiB 범위에서 설정한다.
+- `RELAY_CORS_ALLOW_ORIGIN`: 기본 `*`; 제한된 web origin만 허용하려면 정확한 origin으로 바꾼다.
+
+Relay에는 SRT/HMAC/mTLS secret을 전달하지 않는다.
 
 ### Adapter
 
@@ -174,6 +185,7 @@ docker run --rm \
 
 ```bash
 docker compose -f compose.receiver.yaml build --pull
+docker compose --profile web -f compose.receiver.yaml build --pull
 docker compose --profile rby1 --profile fixture -f compose.edge.yaml build --pull
 ```
 

@@ -27,6 +27,7 @@
 | F21 | 실제 anchor cadence, 무합성 | dataset transaction policy | cadence/fixed-grid tests |
 | F22 | stream 장애와 UI branch 격리 | leaky tee queues/UI-only handle | pipeline plan and fault tests |
 | F23 | Compose 실행 | hardened Edge/Receiver/Adapter Compose | `docker compose config`, image builds |
+| F24 | native gRPC와 URL 영상 동시 접근 | `ListSessions`, `web-relay` HLS/SSE | synthetic gRPC/HLS/TS/SSE integration |
 | N01 | Generic crate에 vendor SDK 없음 | RB-Y1 Python mapping 단일 경계 | `verify-vendor-boundary.py` |
 | N02 | Adapter/stream failure 격리 | 독립 services, per-camera pipelines | queue/fault tests |
 | N03 | 모든 resource bounded | queue/ring/reassembly/stream/history/spool caps | unit tests and env validation |
@@ -41,5 +42,6 @@
 | N12 | revision 재현성 | compiled constants, JCS schema hash | constants/schema tests |
 | N13 | exact LeRobot transaction | Python Dataset Builder | version/transaction/export loader tests |
 | N14 | irregular cadence fail-closed | cadence validator | pytest cadence tests |
+| N15 | Relay 장애와 slow viewer 격리 | optional service, bounded/leaky HLS/SSE/history | hardened container integration, gap/lag metrics |
 
 각 항목의 최종 PASS/BLOCKED 판정은 `docs/audit/ACCEPTANCE_EVIDENCE.csv`에 있다. 물리 장치에서만 확인 가능한 RB-Y1 실제 명령, USB camera unplug/replug, kernel v4l2loopback 장기 안정성은 `docs/audit/OPEN_GATES.md`에서 별도의 `BLOCKED_HARDWARE` gate로 관리한다.

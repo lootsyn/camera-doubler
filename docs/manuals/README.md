@@ -6,7 +6,7 @@
 |---|---|---|
 | `SETUP_AND_SECRETS.md` | 설치/보안 담당자 | env, config, secret, toolchain, generated code, runtime fixture 생성과 보관 |
 | `DEPLOYMENT_RUNBOOK.md` | Edge/Receiver 운영자 | 실제 카메라·Adapter·Receiver의 시작, 확인, 종료, 네트워크 포트 |
-| `VIDEO_AND_METADATA_ACCESS.md` | UI/데이터 소비자 | 사내망에서 동기화 H.264를 보고 frame/AU별 context·vector·quality를 추출; VLC URL 지원 여부와 사유 |
+| `VIDEO_AND_METADATA_ACCESS.md` | UI/데이터 소비자 | 외부 gRPC와 HLS URL 동시 사용, VLC/hls.js 재생, SSE/gRPC frame metadata 추출과 화면 correlation |
 | `ADAPTER_AUTHORING_FOR_AI_AGENTS.md` | AI/개발 에이전트 | 다른 로봇·그리퍼·base·tool용 Adapter를 Core 변경 없이 구현 |
 | `PRODUCTION_CHECKLIST.md` | 배포 승인자 | 보안, capacity, hardware acceptance, 백업/복구 체크리스트 |
 
@@ -20,6 +20,7 @@
 sudo ./scripts/prepare-host.sh
 ./scripts/verify-environment.sh
 docker compose -f compose.receiver.yaml up -d --build --wait
+docker compose --profile web -f compose.receiver.yaml up -d --wait
 docker compose --profile rby1 -f compose.edge.yaml up -d --build --wait
 ```
 
