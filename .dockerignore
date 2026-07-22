@@ -4,6 +4,7 @@
 .tools
 .venv-rby1
 .venv-dataset
+.venv-tools
 target
 validation/runtime
 secrets/*

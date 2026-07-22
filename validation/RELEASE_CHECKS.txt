@@ -5,7 +5,7 @@ Rust workspace
 - cargo clippy --locked --workspace --all-targets --all-features -- -D warnings: PASS
 - cargo test --locked --workspace --all-features: PASS (46 passed, 0 failed)
 
-Edge deployed image robot-multicam-edge-core:local (828dbde52902)
+Edge deployed image robot-multicam-edge-core:local (d771f3294877)
 - non-root/read-only/cap-drop/no-new-privileges healthcheck: PASS
 - required GStreamer plugin discovery: PASS
 - H.264 synthetic round-trip: PASS (24 AUs)
@@ -13,13 +13,15 @@ Edge deployed image robot-multicam-edge-core:local (828dbde52902)
 - anchor CRC context and manifest: PASS
 - MPEG-TS mux/demux, predecode extraction, decoder branch: PASS
 
-Receiver deployed image robot-multicam-receiver:local (5fe0f6fdbf8f)
+Receiver deployed image robot-multicam-receiver:local (e78d2479ac06)
 - non-root/read-only/cap-drop/no-new-privileges self-test: PASS
 - raw replay: PASS (1 segment, 24 AUs, 24 synchronized steps)
 - metadata_sha256: 901bd0be6db8273e7cb79beb571899f093ea3d58e408a7e041b04629ccc48268
 - step_sha256: 8c8b9d9cca045f7ba9a0570d4685aad9ddc75d1b63a5474241f6537b9405d46b
 - deterministic equality: bit-for-bit
 - encrypted authenticated SRT reconnect: PASS (same stream accepted twice, Receiver remained ready)
+- external metadata client: PASS (manifest snapshot, full vectors/context, synchronized H.264 AU dump)
+- session/camera acceptance log: PASS (non-secret UUID/camera/epoch/port only)
 - forced disk pressure: PASS (HTTP 503; disk_pressure low)
 
 Python/runtime

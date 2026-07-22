@@ -356,6 +356,7 @@ for phrase in [
     '".rustup-home"',
     '".venv-rby1"',
     '".venv-dataset"',
+    '".venv-tools"',
     '"target"',
     '("validation", "runtime")',
     'rel.parts[0] == "secrets"',
@@ -380,6 +381,7 @@ elif len(sys.argv) == 2:
             ".tools",
             ".venv-rby1",
             ".venv-dataset",
+            ".venv-tools",
             "target",
         }
         forbidden_env = {

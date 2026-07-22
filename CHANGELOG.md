@@ -22,6 +22,9 @@
 - raw TS에서 synchronized step 24개를 두 번 재생성하는 bit-for-bit deterministic replay 추가
 - hardened Docker runtime, disk-pressure readiness fault, CycloneDX SBOM 및 fixable HIGH/CRITICAL 0건 검증
 - Chapter 29 전체 release audit와 machine-readable acceptance evidence 추가
+- env/secret/toolchain/runtime fixture 재생성, production 배포, 외부 영상·metadata 접근 매뉴얼 추가
+- Receiver gRPC synchronized H.264/metadata client와 session/camera acceptance 운영 로그 추가
+- 다른 로봇용 Adapter를 AI agent가 구현할 수 있는 wire/clock/feature/command/Docker/test 계약 가이드 추가
 
 ## 2.0
 

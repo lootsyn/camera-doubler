@@ -48,6 +48,13 @@ impl ListenerHandle {
                 .and_then(|key| {
                     connecting_registry.transition(&key, BootstrapState::MediaProbing)?;
                     connecting_registry.transition(&key, BootstrapState::ProvisionalStream)?;
+                    tracing::info!(
+                        session_id = %key.session_id,
+                        camera_id = %key.camera_id,
+                        stream_epoch = key.epoch,
+                        %listen_port,
+                        "authenticated SRT stream accepted"
+                    );
                     let mut current = connecting_key.lock().map_err(|_| ReceiverError::Poisoned)?;
                     *current = Some(key);
                     Ok(())

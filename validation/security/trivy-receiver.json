@@ -1,31 +1,31 @@
 {
   "SchemaVersion": 2,
-  "CreatedAt": "2026-07-21T21:58:24.853365169Z",
+  "CreatedAt": "2026-07-22T17:03:11.038651346Z",
   "ArtifactName": "robot-multicam-receiver:local",
   "ArtifactType": "container_image",
   "Metadata": {
-    "Size": 688697344,
+    "Size": 688699904,
     "OS": {
       "Family": "debian",
       "Name": "12.15"
     },
-    "ImageID": "sha256:5fe0f6fdbf8fefc8363f46ec6819be466bc40ea113e587a15445e2d7412a434e",
+    "ImageID": "sha256:e78d2479ac06164a7c03b61a67d0c4d2665d44a6304a2a71ff5012acb22de75e",
     "DiffIDs": [
       "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a",
       "sha256:c19700f0e2a2b569271c3b3a4a414f1412ee0940b357f97955d9ecd4b1af2c79",
-      "sha256:e9475a9f620cac3004ce99b47c83cb8a21ddeaeed7fd7d60ddb09fe659fc2537",
-      "sha256:24f276183486c51970f10427f3c91d36395b1925a24c7c30ce80e1af4b1ad39a",
-      "sha256:b82d2534e7a67f6bc6ce03cb225f2df5038bfd0ff1841166b5c35d2a8edab8f7"
+      "sha256:1dc125ee0aa42e107f23b01a95cd3ac8306e45d1cd0f52dcf6f215d5422b44ff",
+      "sha256:b13e59d0b24d3530c8d9ee29f14ccbd36666c0a37d59e57f47aee5bfe7dca7f9",
+      "sha256:9c4d96ee5403c563b6a4cde97017ea4bc1126488bb13856f8cd6dc9aebe77bfc"
     ],
     "RepoTags": [
       "robot-multicam-receiver:local"
     ],
     "RepoDigests": [
-      "robot-multicam-receiver@sha256:5fe0f6fdbf8fefc8363f46ec6819be466bc40ea113e587a15445e2d7412a434e"
+      "robot-multicam-receiver@sha256:e78d2479ac06164a7c03b61a67d0c4d2665d44a6304a2a71ff5012acb22de75e"
     ],
     "ImageConfig": {
       "architecture": "amd64",
-      "created": "2026-07-22T06:49:56.220997245+09:00",
+      "created": "2026-07-23T01:47:17.372920066+09:00",
       "history": [
         {
           "created": "2026-07-13T00:00:00Z",
@@ -37,29 +37,29 @@
           "created_by": "/bin/sh -c apt-get update \u0026\u0026 apt-get install -y --no-install-recommends       ca-certificates libssl3       gstreamer1.0-tools       gstreamer1.0-plugins-base       gstreamer1.0-plugins-good       gstreamer1.0-plugins-bad       gstreamer1.0-plugins-ugly       gstreamer1.0-libav     \u0026\u0026 rm -rf /var/lib/apt/lists/*"
         },
         {
-          "created": "2026-07-21T21:49:48Z",
-          "created_by": "/bin/sh -c #(nop) COPY file:05193b86463b1e8f2fc4f48e77cebfd653c2291e9c585613563e3037f091b3f6 in /usr/local/bin/robot-multicam-receiver "
+          "created": "2026-07-22T16:47:08Z",
+          "created_by": "/bin/sh -c #(nop) COPY file:dd4cfe0602ee654c64208d861382d68ea17c4f875600627f020356362754eeaa in /usr/local/bin/robot-multicam-receiver "
         },
         {
-          "created": "2026-07-21T21:49:49Z",
+          "created": "2026-07-22T16:47:09Z",
           "created_by": "/bin/sh -c #(nop) COPY file:2b5487810039eb93d94621c10b4bb952fd7ee4784522d0b89fc616fee01f8a35 in /usr/local/bin/robot-replay-verify "
         },
         {
-          "created": "2026-07-21T21:49:51Z",
+          "created": "2026-07-22T16:47:11Z",
           "created_by": "/bin/sh -c groupadd --gid 10001 receiver     \u0026\u0026 useradd --uid 10001 --gid receiver --no-create-home --shell /usr/sbin/nologin receiver"
         },
         {
-          "created": "2026-07-21T21:49:53Z",
+          "created": "2026-07-22T16:47:14Z",
           "created_by": "/bin/sh -c #(nop)  USER 10001:10001",
           "empty_layer": true
         },
         {
-          "created": "2026-07-21T21:49:54Z",
+          "created": "2026-07-22T16:47:16Z",
           "created_by": "/bin/sh -c #(nop)  ENTRYPOINT [\"/usr/local/bin/robot-multicam-receiver\"]",
           "empty_layer": true
         },
         {
-          "created": "2026-07-21T21:49:56Z",
+          "created": "2026-07-22T16:47:17Z",
           "created_by": "/bin/sh -c #(nop)  CMD [\"serve\"]",
           "empty_layer": true
         }
@@ -70,9 +70,9 @@
         "diff_ids": [
           "sha256:81f823b9617547261c907396f63f770deaa554748ff739bedfa650e3bb74595a",
           "sha256:c19700f0e2a2b569271c3b3a4a414f1412ee0940b357f97955d9ecd4b1af2c79",
-          "sha256:e9475a9f620cac3004ce99b47c83cb8a21ddeaeed7fd7d60ddb09fe659fc2537",
-          "sha256:24f276183486c51970f10427f3c91d36395b1925a24c7c30ce80e1af4b1ad39a",
-          "sha256:b82d2534e7a67f6bc6ce03cb225f2df5038bfd0ff1841166b5c35d2a8edab8f7"
+          "sha256:1dc125ee0aa42e107f23b01a95cd3ac8306e45d1cd0f52dcf6f215d5422b44ff",
+          "sha256:b13e59d0b24d3530c8d9ee29f14ccbd36666c0a37d59e57f47aee5bfe7dca7f9",
+          "sha256:9c4d96ee5403c563b6a4cde97017ea4bc1126488bb13856f8cd6dc9aebe77bfc"
         ]
       },
       "config": {
@@ -100,19 +100,19 @@
         "DiffID": "sha256:c19700f0e2a2b569271c3b3a4a414f1412ee0940b357f97955d9ecd4b1af2c79"
       },
       {
-        "Size": 8853504,
-        "Digest": "sha256:07e8ec239f8d81c58bad386f22da50e779f83efd0b8e923fc187efe997d9ad6b",
-        "DiffID": "sha256:e9475a9f620cac3004ce99b47c83cb8a21ddeaeed7fd7d60ddb09fe659fc2537"
+        "Size": 8856064,
+        "Digest": "sha256:857156d1d4ea38dd986ad8de8e6bbe109b39bd4b89439515998cc02e7d8c2379",
+        "DiffID": "sha256:1dc125ee0aa42e107f23b01a95cd3ac8306e45d1cd0f52dcf6f215d5422b44ff"
       },
       {
         "Size": 1566720,
-        "Digest": "sha256:4750e670c207447c91993b7478c96a242777ff4726cf9c65f29924da570ea1d3",
-        "DiffID": "sha256:24f276183486c51970f10427f3c91d36395b1925a24c7c30ce80e1af4b1ad39a"
+        "Digest": "sha256:19a6ed926e613e229dc332efa6adbf9ecca768560c1e0f6f89b6e3a2b8e33249",
+        "DiffID": "sha256:b13e59d0b24d3530c8d9ee29f14ccbd36666c0a37d59e57f47aee5bfe7dca7f9"
       },
       {
         "Size": 15360,
-        "Digest": "sha256:92b23021e008c47c19401fceb4baa7387394dba68251cb9c3c4ae54e5c45642a",
-        "DiffID": "sha256:b82d2534e7a67f6bc6ce03cb225f2df5038bfd0ff1841166b5c35d2a8edab8f7"
+        "Digest": "sha256:e7026e2dd77599b7cab451e12ea27b181ac0d50ea88e7b1b41ce72d4bb8a5035",
+        "DiffID": "sha256:9c4d96ee5403c563b6a4cde97017ea4bc1126488bb13856f8cd6dc9aebe77bfc"
       }
     ]
   },

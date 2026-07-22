@@ -11,6 +11,16 @@
 
 기준 문서는 `ROBOT_MULTICAMERA_BACKEND_DESIGN.md`이며 구현 추적은 `docs/implementation/REQUIREMENTS_TRACEABILITY.md`, 현재 상태는 `docs/implementation/IMPLEMENTATION_STATUS.md`에 있다.
 
+## 매뉴얼
+
+- `docs/manuals/SETUP_AND_SECRETS.md`: Git에서 제외되는 env/secret/toolchain/runtime fixture의 생성·배치·재생성
+- `docs/manuals/DEPLOYMENT_RUNBOOK.md`: Receiver → Adapter → Edge 시작 순서, port/firewall, health/readiness, 종료
+- `docs/manuals/VIDEO_AND_METADATA_ACCESS.md`: 외부 gRPC 접속, 동기화 H.264 화면 재생, manifest/context/quality 조회
+- `docs/manuals/ADAPTER_AUTHORING_FOR_AI_AGENTS.md`: 다른 로봇 Adapter를 AI agent가 구현하기 위한 완전한 계약과 prompt template
+- `docs/manuals/PRODUCTION_CHECKLIST.md`: 실제 camera/robot/capacity/security production 승인 항목
+
+전체 문서 탐색은 `docs/manuals/README.md`에서 시작한다.
+
 ## 빠른 검증
 
 Linux/WSL에서:
@@ -25,6 +35,7 @@ scripts/run-fault-tests.sh
 docker compose -f compose.edge.yaml config -q
 docker compose -f compose.receiver.yaml config -q
 docker run --rm --entrypoint /usr/local/bin/robot-replay-verify robot-multicam-receiver:local --help
+python scripts/receiver-metadata-client.py --help
 ```
 
 개발 설정과 secret을 준비하려면:

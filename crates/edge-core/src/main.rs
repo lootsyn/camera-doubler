@@ -278,6 +278,7 @@ async fn serve() -> Result<()> {
     let hmac_key = read_secret_bytes(&config.hmac_key_file, 32, 4_096)?;
     let edge_boot_id = system_boot_id()?;
     let session_id = Uuid::new_v4();
+    tracing::info!(%session_id, %edge_boot_id, "Edge session created");
     let adapter_runtime = initialize_adapters(&config).await?;
     let _adapter_tasks = &adapter_runtime.tasks;
     let manifest_store = Arc::new(tokio::sync::RwLock::new(Vec::new()));

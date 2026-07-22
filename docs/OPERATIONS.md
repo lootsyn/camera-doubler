@@ -1,5 +1,7 @@
 # 운영 및 troubleshooting
 
+설치/env/secret은 `docs/manuals/SETUP_AND_SECRETS.md`, 단계별 배포는 `docs/manuals/DEPLOYMENT_RUNBOOK.md`, 외부 화면과 metadata 조회는 `docs/manuals/VIDEO_AND_METADATA_ACCESS.md`, 새 로봇 Adapter는 `docs/manuals/ADAPTER_AUTHORING_FOR_AI_AGENTS.md`를 먼저 따른다.
+
 ## 시작 순서
 
 1. `bootstrap-example-config.sh`로 local env를 만들고 production 값으로 수정한다.
@@ -68,6 +70,7 @@ gst-inspect-1.0 v4l2src v4l2sink x264enc h264parse mpegtsmux srtsink srtsrc
 scripts/run-synthetic-roundtrip.sh
 scripts/run-fault-tests.sh
 python3 scripts/verify-vendor-boundary.py
+python3 scripts/receiver-metadata-client.py --help
 ```
 
 SEI round-trip가 실패하면 GStreamer warning의 NAL ordering, H.264 `stream-format=byte-stream,alignment=au`, timestamp exactly-one, mux/demux dynamic pad를 순서대로 확인한다. `v4l2loopback`이 없는 WSL에서는 synthetic round-trip을 codec gate로 사용하되 USB identity/hotplug를 PASS로 가장하지 않는다.

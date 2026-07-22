@@ -2,6 +2,7 @@
 .env.receiver
 .env.dataset-builder
 .env.adapter-*
+!.env.adapter-*.example
 config/embodiment.yaml
 config/camera-policy.yaml
 secrets/*
@@ -17,6 +18,7 @@ target/
 .rustup-home/
 .venv-rby1/
 .venv-dataset/
+.venv-tools/
 python/generated/
 validation/runtime/
 __pycache__/

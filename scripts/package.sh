@@ -22,6 +22,7 @@ excluded_roots = {
     ".tools",
     ".venv-rby1",
     ".venv-dataset",
+    ".venv-tools",
     "target",
 }
 excluded_env = {
