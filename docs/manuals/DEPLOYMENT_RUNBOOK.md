@@ -16,13 +16,13 @@ Edge host: Hardware Adapters ─UDS─ Edge Core ─SRT/UDP─► Receiver
 | 방향 | protocol/port | 목적 | 공개 정책 |
 |---|---|---|---|
 | Edge → Receiver | UDP `SRT_BASE_PORT..+MAX_CAMERAS-1` | 카메라별 encrypted MPEG-TS/SRT | Edge IP에서만 허용 |
-| Metadata client → Receiver | TCP 8083 | ReceiverMetadata gRPC와 선택적 H.264 AU | VPN/SSH tunnel/사설망만 |
+| Metadata client → Receiver | TCP 8083 | 평문 ReceiverMetadata gRPC와 선택적 H.264 AU | 사내망 direct가 기본; VPN/SSH는 선택 |
 | Monitoring → Receiver | TCP 9090 | `/healthz`, `/readyz`, `/metrics` | monitoring subnet만 |
 | Receiver → Edge | TCP 8082 | mTLS control gateway | Receiver IP에서만 허용 |
 | Monitoring → Edge | TCP 9091 | Edge health/readiness/metrics | monitoring subnet만 |
 | Receiver → Dataset Builder | TCP 8090, Compose network | export service | 외부 publish 금지 |
 
-TCP 8080은 현재 호환성용 reserved port이며 browser video/REST endpoint가 아니다. 외부 영상은 `VIDEO_AND_METADATA_ACCESS.md`의 gRPC H.264 경로를 사용한다.
+TCP 8080은 현재 호환성용 reserved port이며 browser video/REST endpoint가 아니다. VLC용 HTTP/HLS/RTSP/SRT 출력도 없으므로 외부 영상은 `VIDEO_AND_METADATA_ACCESS.md`의 gRPC H.264 경로를 사용한다. TCP 8083은 TLS/auth 없는 평문 gRPC이므로 기본 direct 연결은 신뢰할 수 있는 사내망으로 한정한다.
 
 ## 2. 최초 host 준비
 

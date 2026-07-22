@@ -25,6 +25,7 @@
 - env/secret/toolchain/runtime fixture 재생성, production 배포, 외부 영상·metadata 접근 매뉴얼 추가
 - Receiver gRPC synchronized H.264/metadata client와 session/camera acceptance 운영 로그 추가
 - 다른 로봇용 Adapter를 AI agent가 구현할 수 있는 wire/clock/feature/command/Docker/test 계약 가이드 추가
+- VLC URL endpoint 지원 여부와 ingest/output 구분, 사내망 평문 접속, frame/AU별 metadata 및 manifest feature slice 추출 절차 명확화
 
 ## 2.0
 

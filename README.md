@@ -15,7 +15,7 @@
 
 - `docs/manuals/SETUP_AND_SECRETS.md`: Git에서 제외되는 env/secret/toolchain/runtime fixture의 생성·배치·재생성
 - `docs/manuals/DEPLOYMENT_RUNBOOK.md`: Receiver → Adapter → Edge 시작 순서, port/firewall, health/readiness, 종료
-- `docs/manuals/VIDEO_AND_METADATA_ACCESS.md`: 외부 gRPC 접속, 동기화 H.264 화면 재생, manifest/context/quality 조회
+- `docs/manuals/VIDEO_AND_METADATA_ACCESS.md`: 사내망 평문 gRPC 접속, 동기화 H.264 재생, frame별 metadata 추출, VLC URL 미지원 사유
 - `docs/manuals/ADAPTER_AUTHORING_FOR_AI_AGENTS.md`: 다른 로봇 Adapter를 AI agent가 구현하기 위한 완전한 계약과 prompt template
 - `docs/manuals/PRODUCTION_CHECKLIST.md`: 실제 camera/robot/capacity/security production 승인 항목
 
